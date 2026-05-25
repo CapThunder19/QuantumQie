@@ -1,0 +1,682 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+/* ========================================
+   QuantumQie — Dark Industrial Theme
+   ======================================== */
+
+:root {
+  /* Background tones */
+  --bg-void: #050508;
+  --bg-deep: #0a0a0f;
+  --bg-surface: #0d0d14;
+  --bg-elevated: #12121c;
+
+  /* Grid colors */
+  --grid-line: rgba(30, 30, 60, 0.5);
+  --grid-chunk: rgba(40, 40, 80, 0.6);
+
+  /* Accent colors */
+  --accent-cyan: #00d4ff;
+  --accent-cyan-dim: rgba(0, 212, 255, 0.3);
+  --accent-amber: #ff8c00;
+  --accent-amber-dim: rgba(255, 140, 0, 0.3);
+  --accent-green: #00ff88;
+  --accent-red: #ff3344;
+
+  /* UI surfaces (glassmorphism) */
+  --glass-bg: rgba(12, 12, 22, 0.85);
+  --glass-border: rgba(60, 60, 100, 0.35);
+  --glass-border-hover: rgba(0, 212, 255, 0.4);
+  --glass-blur: 16px;
+
+  /* Text */
+  --text-primary: #e0e0f0;
+  --text-secondary: #8888aa;
+  --text-dim: #555570;
+
+  /* Spacing */
+  --toolbar-height: 80px;
+  --hud-padding: 16px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+
+  /* Shadows */
+  --shadow-glow-cyan: 0 0 20px rgba(0, 212, 255, 0.15);
+  --shadow-glow-amber: 0 0 20px rgba(255, 140, 0, 0.15);
+  --shadow-panel: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* ========================================
+   Reset & Base
+   ======================================== */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-void);
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: crosshair;
+  user-select: none;
+}
+
+/* ========================================
+   Game Canvas
+   ======================================== */
+
+.game-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* ========================================
+   HUD — Top Info Bars
+   ======================================== */
+
+.hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: var(--hud-padding);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-panel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-panel);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  pointer-events: auto;
+  transition: border-color var(--transition-normal);
+}
+
+.hud-panel:hover {
+  border-color: var(--glass-border-hover);
+}
+
+.hud-label {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.hud-value {
+  color: var(--accent-cyan);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-separator {
+  width: 1px;
+  height: 16px;
+  background: var(--glass-border);
+}
+
+/* ========================================
+   Factory Hub Side Panels
+   ======================================== */
+
+.hub-side-panel {
+  position: fixed;
+  top: calc(50px + var(--hud-padding) + 56px);
+  left: var(--hud-padding);
+  width: min(260px, calc(100vw - 32px));
+  display: grid;
+  gap: 12px;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.hub-side-card {
+  padding: 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-panel);
+}
+
+.hub-panel-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hub-panel-subtitle {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.hub-storage-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.hub-storage-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hub-storage-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hub-storage-value {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-cyan);
+}
+
+.hub-storage-value.money { color: var(--accent-green); }
+.hub-storage-value.food { color: var(--accent-amber); }
+.hub-storage-value.iron { color: #e07020; }
+.hub-storage-value.copper { color: #20a0a0; }
+
+.hub-panel-loading {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.hub-workers-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.hub-workers-metric {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.hub-workers-metric-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hub-workers-metric-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+.hub-workers-list {
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  max-height: 180px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.hub-worker-item {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hub-worker-type {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hub-worker-status {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.hub-worker-status.idle {
+  background: rgba(255, 140, 0, 0.12);
+  color: var(--accent-amber);
+}
+
+.hub-worker-status.assigned {
+  background: rgba(0, 255, 136, 0.12);
+  color: var(--accent-green);
+}
+
+.hub-workers-empty {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+@media (max-width: 900px) {
+  .hub-side-panel {
+    top: calc(50px + var(--hud-padding) + 64px);
+  }
+}
+
+/* ========================================
+   Toolbar — Bottom Building Selector
+   ======================================== */
+
+.toolbar-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--hud-padding) var(--hud-padding);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-panel);
+  pointer-events: auto;
+  transition: border-color var(--transition-normal);
+}
+
+.toolbar:hover {
+  border-color: var(--glass-border-hover);
+}
+
+.toolbar-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px 6px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 68px;
+}
+
+.toolbar-item:hover {
+  background: rgba(0, 212, 255, 0.06);
+  border-color: rgba(0, 212, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.toolbar-item.selected {
+  background: rgba(0, 212, 255, 0.1);
+  border-color: rgba(0, 212, 255, 0.4);
+  box-shadow: var(--shadow-glow-cyan),
+              inset 0 0 20px rgba(0, 212, 255, 0.05);
+}
+
+.toolbar-item.selected .toolbar-item-name {
+  color: var(--accent-cyan);
+}
+
+.toolbar-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toolbar-item-name {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.toolbar-hotkey {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1.2;
+}
+
+.toolbar-item.selected .toolbar-hotkey {
+  color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.toolbar-item.toolbar-remove .toolbar-item-name {
+  color: var(--accent-red);
+}
+
+.toolbar-remove-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-red);
+  background: rgba(255, 51, 68, 0.1);
+  border: 1px solid rgba(255, 51, 68, 0.35);
+  letter-spacing: 1px;
+}
+
+.toolbar-item.toolbar-remove.selected {
+  background: rgba(255, 51, 68, 0.14);
+  border-color: rgba(255, 51, 68, 0.6);
+  box-shadow: 0 0 20px rgba(255, 51, 68, 0.2),
+              inset 0 0 18px rgba(255, 51, 68, 0.08);
+}
+
+.toolbar-item.toolbar-remove.selected .toolbar-hotkey {
+  color: var(--accent-red);
+  background: rgba(255, 51, 68, 0.12);
+}
+
+/* ========================================
+   Minimap
+   ======================================== */
+
+.minimap-wrapper {
+  position: fixed;
+  bottom: calc(var(--toolbar-height) + var(--hud-padding) + 8px);
+  right: var(--hud-padding);
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.minimap-container {
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-panel);
+  transition: border-color var(--transition-normal);
+}
+
+.minimap-container:hover {
+  border-color: var(--glass-border-hover);
+}
+
+.minimap-canvas {
+  display: block;
+}
+
+.minimap-label {
+  position: absolute;
+  top: -20px;
+  right: 0;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ========================================
+   Building Info Tooltip
+   ======================================== */
+
+.building-info {
+  position: fixed;
+  z-index: 20;
+  padding: 10px 14px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-panel);
+  pointer-events: none;
+  animation: fadeInUp 0.15s ease;
+  max-width: 200px;
+}
+
+.building-info-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.building-info-desc {
+  font-size: 10px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.building-info-meta {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--glass-border);
+  font-size: 9px;
+  color: var(--text-dim);
+  display: flex;
+  gap: 10px;
+}
+
+/* ========================================
+   Controls Help Overlay
+   ======================================== */
+
+.controls-hint {
+  position: fixed;
+  bottom: calc(var(--toolbar-height) + var(--hud-padding) + 8px);
+  left: var(--hud-padding);
+  padding: 10px 14px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-panel);
+  font-size: 10px;
+  color: var(--text-secondary);
+  z-index: 10;
+  line-height: 1.8;
+  opacity: 0.7;
+  transition: opacity var(--transition-normal);
+}
+
+.controls-hint:hover {
+  opacity: 1;
+}
+
+.controls-hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-cyan);
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 3px;
+  margin: 0 2px;
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.25);
+  }
+}
+
+/* ========================================
+   Navigation Bar
+   ======================================== */
+
+.global-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 100;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.nav-logo {
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color var(--transition-fast);
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  text-shadow: var(--shadow-glow-cyan);
+}
+
+.wallet-connect {
+  display: flex;
+  align-items: center;
+}
+
+.wallet-connect button {
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+}
+
+/* Push the game canvas down slightly so the top of the HUD isn't covered by nav */
+.game-container .hud {
+  top: 50px;
+}
+
+/* ========================================
+   Scrollbar (hidden)
+   ======================================== */
+
+::-webkit-scrollbar {
+  display: none;
+}
