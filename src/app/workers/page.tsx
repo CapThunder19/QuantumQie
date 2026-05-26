@@ -3,7 +3,7 @@
 import React from 'react';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { useGameStore } from '../../store/gameStore';
+import { getWorkerCost, useGameStore } from '../../store/gameStore';
 import { getBuildingDef } from '../../game/buildings';
 import { loadBuildings } from '../../game/persistence';
 import './workers.css';
@@ -60,6 +60,8 @@ export default function WorkersPage() {
   const handleBuyFarmer = () => buyWorker('farmer');
   const handleBuyMiner = () => buyWorker('miner');
   const availableWorkers = workers.filter((worker) => !worker.assignedBuildingId);
+  const farmerCost = getWorkerCost('farmer', workers);
+  const minerCost = getWorkerCost('miner', workers);
 
   return (
     <div className="workers-page">
@@ -74,13 +76,13 @@ export default function WorkersPage() {
               <div className="shop-icon farmer-icon">👨‍🌾</div>
               <div className="shop-info">
                 <h3>Farmer</h3>
-                <p>Produces Food at Farms</p>
+                <p>Produces Wheat, Potato, Rice at Farms</p>
                 <button 
                   className="buy-btn" 
                   onClick={handleBuyFarmer}
-                  disabled={inventory.money < 50}
+                  disabled={inventory.money < farmerCost}
                 >
-                  Buy for $50
+                  Buy for ${farmerCost.toLocaleString()}
                 </button>
               </div>
             </div>
@@ -93,9 +95,9 @@ export default function WorkersPage() {
                 <button 
                   className="buy-btn" 
                   onClick={handleBuyMiner}
-                  disabled={inventory.money < 100}
+                  disabled={inventory.money < minerCost}
                 >
-                  Buy for $100
+                  Buy for ${minerCost.toLocaleString()}
                 </button>
               </div>
             </div>
@@ -146,7 +148,7 @@ export default function WorkersPage() {
           {workers.length === 0 ? (
             <p className="empty-roster">You have no workers yet. Buy some from the shop!</p>
           ) : (
-            <ul className="worker-list">
+            <ul className="worker-list worker-list-scroll">
               {workers.map((w) => (
                 <li key={w.id} className="worker-list-item">
                   <div className="worker-type">

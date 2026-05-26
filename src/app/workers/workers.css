@@ -2,6 +2,9 @@
   padding: 80px 40px 40px;
   max-width: 1200px;
   margin: 0 auto;
+  min-height: 100vh;
+  height: 100vh;
+  overflow: auto;
 }
 
 .page-title {
@@ -68,7 +71,9 @@
 }
 
 .inv-value.money { color: var(--accent-green); }
-.inv-value.food { color: var(--accent-amber); }
+.inv-value.wheat { color: var(--accent-amber); }
+.inv-value.potato { color: #d7b58c; }
+.inv-value.rice { color: #8fe6c6; }
 .inv-value.iron { color: #e07020; }
 .inv-value.copper { color: #20a0a0; }
 
@@ -154,6 +159,12 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 16px;
+}
+
+.worker-list-scroll {
+  max-height: 45vh;
+  overflow: auto;
+  padding-right: 6px;
 }
 
 .worker-list-item {

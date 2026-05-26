@@ -29,6 +29,7 @@ export default function BuildingInfo({ defId, direction, x, y, visible }: Buildi
       <div className="building-info-desc">{def.description}</div>
       <div className="building-info-meta">
         <span>Size: {def.size}x{def.size}</span>
+        {def.cost > 0 && <span>Cost: ${def.cost.toLocaleString()}</span>}
         {direction && <span>Dir: {direction.toUpperCase()}</span>}
       </div>
     </div>

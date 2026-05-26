@@ -103,6 +103,15 @@ export function tick(engine: GameEngine, timestamp: number): void {
 
   // Process input actions
   const actions = consumeActions(engine.input);
+  const store = useGameStore.getState();
+
+  if (engine.input.selectedBuildingId) {
+    const selectedDef = getBuildingDef(engine.input.selectedBuildingId);
+    const selectedCost = selectedDef?.cost ?? 0;
+    engine.input.canAffordPlacement = store.inventory.money >= selectedCost;
+  } else {
+    engine.input.canAffordPlacement = true;
+  }
 
   if (actions.rotate) {
     engine.input.currentDirection = rotateDirection(engine.input.currentDirection);
@@ -122,34 +131,44 @@ export function tick(engine: GameEngine, timestamp: number): void {
     } else if (engine.input.selectedBuildingId) {
       const def = getBuildingDef(engine.input.selectedBuildingId);
       if (def) {
-        const placed = placeBuilding(
-          engine.world,
-          def.id,
-          engine.input.mouseGridCol,
-          engine.input.mouseGridRow,
-          engine.input.currentDirection
-        );
-        if (placed) {
-          void upsertBuilding(placed);
+        const cost = def.cost ?? 0;
+        if (store.inventory.money >= cost) {
+          const placed = placeBuilding(
+            engine.world,
+            def.id,
+            engine.input.mouseGridCol,
+            engine.input.mouseGridRow,
+            engine.input.currentDirection
+          );
+          if (placed) {
+            if (cost > 0) {
+              store.addResource('money', -cost);
+            }
+            void upsertBuilding(placed);
+          }
         }
       }
     } else {
       // Interaction mode (no building selected)
       const b = getBuildingAt(engine.world, engine.input.mouseGridCol, engine.input.mouseGridRow);
       if (b) {
-        const store = useGameStore.getState();
-        
         if (b.readyToHarvest) {
           // Harvest!
           b.readyToHarvest = false;
           b.productionProgress = 0;
           
-          if (b.defId.startsWith('farm')) {
-            store.addResource('food', 10);
+          if (b.defId === 'farm-wheat') {
+            store.addResource('wheat', 10);
+          } else if (b.defId === 'farm-potato') {
+            store.addResource('potato', 10);
+          } else if (b.defId === 'farm-rice') {
+            store.addResource('rice', 10);
           } else if (b.defId === 'mine-iron') {
             store.addResource('iron_ore', 10);
           } else if (b.defId === 'mine-copper') {
             store.addResource('copper_ore', 10);
+          } else if (b.defId === 'mine-diamond') {
+            store.addResource('diamond', 5);
           } else {
             store.addResource('money', 5);
           }

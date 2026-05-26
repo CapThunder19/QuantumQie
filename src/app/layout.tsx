@@ -29,6 +29,8 @@ export default function RootLayout({
               <div className="nav-links">
                 <Link href="/game" className="nav-link">Factory Hub</Link>
                 <Link href="/workers" className="nav-link">Worker Hub</Link>
+                <Link href="/marketplace" className="nav-link">Marketplace</Link>
+                <Link href="/sepolia-exchange" className="nav-link">Sepolia Exchange</Link>
               </div>
               <WalletButton />
             </div>

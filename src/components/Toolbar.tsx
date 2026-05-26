@@ -48,7 +48,7 @@ export default function Toolbar({ selectedBuildingId, removeMode, onSelectBuildi
             onClick={() => {
               onSelectBuilding(selectedBuildingId === def.id ? null : def.id);
             }}
-            title={`${def.name} (${def.hotkey})`}
+            title={`${def.name} (${def.hotkey})${def.cost > 0 ? ` — $${def.cost.toLocaleString()}` : ''}`}
           >
             <span className="toolbar-hotkey">{def.hotkey}</span>
             <div className="toolbar-icon">

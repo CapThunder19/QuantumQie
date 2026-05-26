@@ -11,9 +11,12 @@ export interface Worker {
 
 export interface Inventory {
   money: number;
-  food: number;
+  wheat: number;
+  potato: number;
+  rice: number;
   iron_ore: number;
   copper_ore: number;
+  diamond: number;
 }
 
 interface GameState {
@@ -30,31 +33,51 @@ interface GameState {
   unassignWorker: (workerId: string) => void;
   addResource: (type: keyof Inventory, amount: number) => void;
   hydrateFromSupabase: () => Promise<void>;
-  flushToSupabase: () => Promise<void>;
+  flushToSupabase: () => Promise<boolean>;
   
   // Helpers
   getAvailableWorker: (type: WorkerType) => Worker | undefined;
 }
 
-const WORKER_COSTS: Record<WorkerType, number> = {
+const BASE_WORKER_COSTS: Record<WorkerType, number> = {
   farmer: 50,
   miner: 100,
+};
+
+const WORKER_PRICE_CONFIG = {
+  sameTypeScale: 0.18,
+  totalScale: 0.06,
+  step: 5,
+  maxMultiplier: 3,
 };
 
 
 const DEFAULT_INVENTORY: Inventory = {
   money: 500,
-  food: 0,
+  wheat: 0,
+  potato: 0,
+  rice: 0,
   iron_ore: 0,
   copper_ore: 0,
+  diamond: 0,
 };
 
 type InventoryRow = {
   save_id: string;
   money: number;
-  food: number;
+  wheat: number;
+  potato: number;
+  rice: number;
   iron_ore: number;
   copper_ore: number;
+  diamond: number;
+  food?: number;
+};
+
+type LegacyInventoryRow = {
+  save_id: string;
+  money: number;
+  food: number;
 };
 
 type WorkerRow = {
@@ -65,12 +88,33 @@ type WorkerRow = {
 };
 
 function normalizeInventory(row?: Partial<InventoryRow> | null): Inventory {
-  return {
+  const base = {
     money: typeof row?.money === 'number' ? row.money : DEFAULT_INVENTORY.money,
-    food: typeof row?.food === 'number' ? row.food : DEFAULT_INVENTORY.food,
+    wheat: typeof row?.wheat === 'number' ? row.wheat : DEFAULT_INVENTORY.wheat,
+    potato: typeof row?.potato === 'number' ? row.potato : DEFAULT_INVENTORY.potato,
+    rice: typeof row?.rice === 'number' ? row.rice : DEFAULT_INVENTORY.rice,
     iron_ore: typeof row?.iron_ore === 'number' ? row.iron_ore : DEFAULT_INVENTORY.iron_ore,
     copper_ore: typeof row?.copper_ore === 'number' ? row.copper_ore : DEFAULT_INVENTORY.copper_ore,
+    diamond: typeof row?.diamond === 'number' ? row.diamond : DEFAULT_INVENTORY.diamond,
   };
+
+  const hasNewCrops =
+    typeof row?.wheat === 'number' || typeof row?.potato === 'number' || typeof row?.rice === 'number';
+
+  if (!hasNewCrops && typeof row?.food === 'number' && row.food > 0) {
+    const total = row.food;
+    const baseShare = Math.floor(total / 3);
+    const remainder = total - baseShare * 3;
+
+    return {
+      ...base,
+      wheat: baseShare + (remainder > 0 ? 1 : 0),
+      potato: baseShare + (remainder > 1 ? 1 : 0),
+      rice: baseShare,
+    };
+  }
+
+  return base;
 }
 
 function mapWorkerRow(row: WorkerRow): Worker {
@@ -85,28 +129,52 @@ function formatSaveId(address: string | null): string | null {
   return address ? `wallet:${address.toLowerCase()}` : null;
 }
 
+function toLegacyFood(inventory: Inventory): number {
+  return inventory.wheat + inventory.potato + inventory.rice;
+}
+
+function toLegacyInventoryRow(saveId: string, inventory: Inventory): LegacyInventoryRow {
+  return {
+    save_id: saveId,
+    money: inventory.money,
+    food: toLegacyFood(inventory),
+  };
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function roundToStep(value: number, step: number): number {
+  return Math.round(value / step) * step;
+}
+
+export function getWorkerCost(type: WorkerType, workers: Worker[]): number {
+  const base = BASE_WORKER_COSTS[type];
+  const sameTypeCount = workers.filter((worker) => worker.type === type).length;
+  const totalCount = workers.length;
+  const multiplier = clampNumber(
+    1 + sameTypeCount * WORKER_PRICE_CONFIG.sameTypeScale + totalCount * WORKER_PRICE_CONFIG.totalScale,
+    1,
+    WORKER_PRICE_CONFIG.maxMultiplier
+  );
+
+  return Math.max(base, roundToStep(base * multiplier, WORKER_PRICE_CONFIG.step));
+}
+
 export const useGameStore = create<GameState>((set, get) => {
   const getSaveId = () => formatSaveId(get().userAddress);
 
-  const saveState = async () => {
-    const client = getSupabaseClient();
-    if (!client) return;
-
+  const saveState = async (): Promise<boolean> => {
     const saveId = getSaveId();
-    if (!saveId) return;
+    if (!saveId) {
+      console.warn('No saveId (wallet not connected); aborting save.');
+      return false;
+    }
 
     const { inventory, workers } = get();
     const inventoryRow: InventoryRow = { save_id: saveId, ...inventory };
-
-    const { error: inventoryError } = await client
-      .from('inventory')
-      .upsert(inventoryRow, { onConflict: 'save_id' });
-    if (inventoryError) {
-      console.warn('Supabase inventory save failed:', inventoryError.message);
-    }
-
-    if (workers.length === 0) return;
-
+    const legacyInventoryRow = toLegacyInventoryRow(saveId, inventory);
     const workerRows: WorkerRow[] = workers.map((worker) => ({
       id: worker.id,
       save_id: saveId,
@@ -114,12 +182,63 @@ export const useGameStore = create<GameState>((set, get) => {
       assigned_building_id: worker.assignedBuildingId,
     }));
 
+    try {
+      const response = await fetch('/api/save-state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          saveId,
+          inventory: inventoryRow,
+          workers: workerRows,
+        }),
+      });
+
+      if (response.ok) {
+        return true;
+      }
+
+      const errorText = await response.text();
+      console.warn('Server save-state endpoint failed:', response.status, errorText);
+    } catch (error) {
+      console.warn('Server save-state endpoint unavailable:', error);
+    }
+
+    const client = getSupabaseClient();
+    if (!client) {
+      console.warn('Supabase client unavailable; aborting fallback save.');
+      return false;
+    }
+
+    const { error: inventoryError } = await client
+      .from('inventory')
+      .upsert(inventoryRow, { onConflict: 'save_id' });
+
+    if (inventoryError) {
+      const legacyFallback = await client
+        .from('inventory')
+        .upsert(legacyInventoryRow, { onConflict: 'save_id' });
+
+      if (legacyFallback.error) {
+        console.warn('Supabase inventory fallback save failed:', legacyFallback.error.message, {
+          inventoryRow,
+          legacyInventoryRow,
+        });
+        return false;
+      }
+    }
+
+    if (workerRows.length === 0) return true;
+
     const { error: workerError } = await client
       .from('workers')
       .upsert(workerRows, { onConflict: 'save_id,id' });
+
     if (workerError) {
-      console.warn('Supabase worker save failed:', workerError.message);
+      console.warn('Supabase worker fallback save failed:', workerError.message, { workerRows });
+      return false;
     }
+
+    return true;
   };
 
   const hydrateFromSupabase = async () => {
@@ -142,17 +261,29 @@ export const useGameStore = create<GameState>((set, get) => {
 
     const inventoryResponse = await client
       .from('inventory')
-      .select('save_id, money, food, iron_ore, copper_ore')
+      .select('save_id, money, wheat, potato, rice, iron_ore, copper_ore, diamond, food')
       .eq('save_id', saveId)
       .maybeSingle();
 
+    let inventory = normalizeInventory(inventoryResponse.data ?? undefined);
+
     if (inventoryResponse.error) {
       console.warn('Supabase inventory load failed:', inventoryResponse.error.message);
+
+      const legacyInventoryResponse = await client
+        .from('inventory')
+        .select('save_id, money, food')
+        .eq('save_id', saveId)
+        .maybeSingle();
+
+      if (legacyInventoryResponse.error) {
+        console.warn('Supabase legacy inventory load failed:', legacyInventoryResponse.error.message);
+      } else {
+        inventory = normalizeInventory(legacyInventoryResponse.data ?? undefined);
+      }
     }
 
-    const inventory = normalizeInventory(inventoryResponse.data ?? undefined);
-
-    if (!inventoryResponse.data) {
+    if (!inventoryResponse.data && !inventoryResponse.error) {
       await client.from('inventory').upsert({ save_id: saveId, ...inventory }, { onConflict: 'save_id' });
     }
 
@@ -197,8 +328,8 @@ export const useGameStore = create<GameState>((set, get) => {
     },
 
     buyWorker: (type: WorkerType) => {
-      const cost = WORKER_COSTS[type];
       const { inventory, workers } = get();
+      const cost = getWorkerCost(type, workers);
       
       if (inventory.money >= cost) {
         set({

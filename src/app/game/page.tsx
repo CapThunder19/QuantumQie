@@ -267,8 +267,16 @@ export default function GamePage() {
                 <span className="hub-storage-value money">${inventory.money.toLocaleString()}</span>
               </li>
               <li className="hub-storage-item">
-                <span className="hub-storage-label">Food</span>
-                <span className="hub-storage-value food">{inventory.food.toLocaleString()}</span>
+                <span className="hub-storage-label">Wheat</span>
+                <span className="hub-storage-value wheat">{inventory.wheat.toLocaleString()}</span>
+              </li>
+              <li className="hub-storage-item">
+                <span className="hub-storage-label">Potato</span>
+                <span className="hub-storage-value potato">{inventory.potato.toLocaleString()}</span>
+              </li>
+              <li className="hub-storage-item">
+                <span className="hub-storage-label">Rice</span>
+                <span className="hub-storage-value rice">{inventory.rice.toLocaleString()}</span>
               </li>
               <li className="hub-storage-item">
                 <span className="hub-storage-label">Iron Ore</span>
@@ -277,6 +285,10 @@ export default function GamePage() {
               <li className="hub-storage-item">
                 <span className="hub-storage-label">Copper Ore</span>
                 <span className="hub-storage-value copper">{inventory.copper_ore.toLocaleString()}</span>
+              </li>
+              <li className="hub-storage-item">
+                <span className="hub-storage-label">Diamond</span>
+                <span className="hub-storage-value diamond">{inventory.diamond.toLocaleString()}</span>
               </li>
             </ul>
           )}
@@ -350,12 +362,6 @@ export default function GamePage() {
         y={hoverInfo.y}
       />
 
-      <div className="controls-hint">
-        WASD/Arrows/Drag: <kbd>Pan</kbd> <br/>
-        Scroll: <kbd>Zoom</kbd> <br/>
-        <kbd>R</kbd>: Rotate | <kbd>Q</kbd>: Deselect | <kbd>X</kbd>: Remove Mode <br/>
-        <kbd>L-Click</kbd>: Place/Remove | <kbd>R-Click</kbd>: Remove
-      </div>
     </div>
   );
 }

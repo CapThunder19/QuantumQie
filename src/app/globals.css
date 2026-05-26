@@ -162,6 +162,10 @@ html, body {
   gap: 12px;
   z-index: 10;
   pointer-events: auto;
+  height: calc(100vh - (50px + var(--hud-padding) + 56px) - var(--hud-padding));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 6px;
 }
 
 .hub-side-card {
@@ -223,9 +227,12 @@ html, body {
 }
 
 .hub-storage-value.money { color: var(--accent-green); }
-.hub-storage-value.food { color: var(--accent-amber); }
+.hub-storage-value.wheat { color: var(--accent-amber); }
+.hub-storage-value.potato { color: #d7b58c; }
+.hub-storage-value.rice { color: #8fe6c6; }
 .hub-storage-value.iron { color: #e07020; }
 .hub-storage-value.copper { color: #20a0a0; }
+.hub-storage-value.diamond { color: #7ed1ff; }
 
 .hub-panel-loading {
   margin-top: 10px;
@@ -239,6 +246,13 @@ html, body {
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin-top: 12px;
+}
+
+.hub-workers-panel {
+  display: flex;
+  flex-direction: column;
+  height: clamp(220px, 45vh, 360px);
+  overflow: hidden;
 }
 
 .hub-workers-metric {
@@ -271,9 +285,11 @@ html, body {
   display: grid;
   gap: 8px;
   margin-top: 10px;
-  max-height: 180px;
+  max-height: none;
   overflow: auto;
   padding-right: 4px;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .hub-worker-item {

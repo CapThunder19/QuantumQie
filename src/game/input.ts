@@ -17,6 +17,7 @@ export interface InputState {
   selectedBuildingId: string | null;
   removeMode: boolean;
   currentDirection: Direction;
+  canAffordPlacement: boolean;
   // Actions (consumed each frame)
   placeRequested: boolean;
   removeRequested: boolean;
@@ -34,6 +35,7 @@ export function createInputState(): InputState {
     selectedBuildingId: null,
     removeMode: false,
     currentDirection: 'up' as Direction,
+    canAffordPlacement: true,
     placeRequested: false,
     removeRequested: false,
     rotateRequested: false,
@@ -59,6 +61,7 @@ const BUILDING_HOTKEYS: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 const DIRECTION_CYCLE: Direction[] = ['up', 'right', 'down', 'left'];
+const PAN_CONTROLS_ENABLED = false;
 
 function nextDirection(current: Direction): Direction {
   const idx = DIRECTION_CYCLE.indexOf(current);
@@ -157,7 +160,7 @@ export function setupInputHandlers(
     updateMouseGrid(inputState, camera, canvasWidth(), canvasHeight());
 
     // Camera drag
-    if (camera.isDragging) {
+    if (PAN_CONTROLS_ENABLED && camera.isDragging) {
       const dx = (e.clientX - dragStartScreenX) / camera.zoom;
       const dy = (e.clientY - dragStartScreenY) / camera.zoom;
       camera.targetX = dragStartCamX - dx;
@@ -179,7 +182,7 @@ export function setupInputHandlers(
     } else if (e.button === 2) {
       // Right click → remove
       inputState.removeRequested = true;
-    } else if (e.button === 1) {
+    } else if (e.button === 1 && PAN_CONTROLS_ENABLED) {
       // Middle click → start camera drag
       e.preventDefault();
       camera.isDragging = true;
@@ -191,7 +194,7 @@ export function setupInputHandlers(
   };
 
   const onMouseUp = (e: MouseEvent) => {
-    if (e.button === 1) {
+    if (e.button === 1 && PAN_CONTROLS_ENABLED) {
       camera.isDragging = false;
     }
   };
@@ -281,6 +284,10 @@ export function consumeActions(
 export function getMovementDelta(
   inputState: InputState,
 ): { dx: number; dy: number } {
+  if (!PAN_CONTROLS_ENABLED) {
+    return { dx: 0, dy: 0 };
+  }
+
   let dx = 0;
   let dy = 0;
 

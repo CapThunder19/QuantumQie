@@ -34,7 +34,10 @@ export default function LandingPage() {
           </button>
         </div>
 
-        <p className="landing-note">You can also visit the <Link href="/workers">Worker Hub</Link>.</p>
+        <p className="landing-note">
+          You can also visit the <Link href="/workers">Worker Hub</Link>, the <Link href="/marketplace">Marketplace</Link>, or the{' '}
+          <Link href="/sepolia-exchange">Sepolia Exchange</Link>.
+        </p>
       </div>
     </main>
   );

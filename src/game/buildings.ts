@@ -10,6 +10,7 @@ export interface BuildingDef {
   accentColor: string; // detail/icon color
   hotkey: string; // '1' through '8'
   description: string;
+  cost: number;
 }
 
 export interface PlacedBuilding {
@@ -34,6 +35,7 @@ export const BUILDINGS: BuildingDef[] = [
     accentColor: '#f5d06a',
     hotkey: '1',
     description: 'Grows wheat for food and trade',
+    cost: 40,
   },
   {
     id: 'farm-potato',
@@ -43,6 +45,7 @@ export const BUILDINGS: BuildingDef[] = [
     accentColor: '#d7b58c',
     hotkey: '2',
     description: 'Grows potatoes for staples',
+    cost: 50,
   },
   {
     id: 'farm-rice',
@@ -52,6 +55,7 @@ export const BUILDINGS: BuildingDef[] = [
     accentColor: '#b9f4c8',
     hotkey: '3',
     description: 'Grows rice in wet fields',
+    cost: 60,
   },
   {
     id: 'mine-copper',
@@ -61,6 +65,7 @@ export const BUILDINGS: BuildingDef[] = [
     accentColor: '#f0a24a',
     hotkey: '4',
     description: 'Extracts copper ore',
+    cost: 90,
   },
   {
     id: 'mine-iron',
@@ -70,6 +75,7 @@ export const BUILDINGS: BuildingDef[] = [
     accentColor: '#c2c7d2',
     hotkey: '5',
     description: 'Extracts iron ore',
+    cost: 110,
   },
   {
     id: 'mine-diamond',
@@ -79,6 +85,7 @@ export const BUILDINGS: BuildingDef[] = [
     accentColor: '#7ed1ff',
     hotkey: '6',
     description: 'Extracts rare diamonds',
+    cost: 180,
   },
   {
     id: 'warehouse',
@@ -88,6 +95,7 @@ export const BUILDINGS: BuildingDef[] = [
     accentColor: '#b4b4c8',
     hotkey: '7',
     description: 'Stores and displays your global resources',
+    cost: 0,
   },
 ];
 

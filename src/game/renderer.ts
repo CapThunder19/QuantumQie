@@ -163,7 +163,7 @@ export function render(
         ghostRow * TILE_SIZE,
       );
 
-      const valid = canPlace(world, input.selectedBuildingId, ghostCol, ghostRow);
+      const valid = canPlace(world, input.selectedBuildingId, ghostCol, ghostRow) && input.canAffordPlacement;
 
       // Draw ghost building at half opacity
       ctx.globalAlpha = GHOST_ALPHA;
