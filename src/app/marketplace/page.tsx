@@ -71,20 +71,20 @@ const MARKET_PRICE_CONFIG: Record<MarketKey, MarketPriceConfig> = {
 const MARKET_ITEMS: MarketItem[] = [
   {
     key: 'wheat',
-    label: 'Wheat Bundles',
-    description: 'High-volume grain contracts for city bakers.',
+    label: 'Carrot Crates',
+    description: 'Bright harvest crates headed for city markets.',
     toneClass: 'tone-wheat',
   },
   {
     key: 'potato',
-    label: 'Potato Lots',
-    description: 'Starchy reserves demanded by frontier kitchens.',
+    label: 'Rice Sacks',
+    description: 'Staple grain shipments for regional kitchens.',
     toneClass: 'tone-potato',
   },
   {
     key: 'rice',
-    label: 'Rice Sacks',
-    description: 'Long-haul staples for regional supply chains.',
+    label: 'Cabbage Bundles',
+    description: 'Leafy bundles packed fresh from the fields.',
     toneClass: 'tone-rice',
   },
   {

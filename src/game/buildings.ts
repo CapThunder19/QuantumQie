@@ -24,43 +24,50 @@ export interface PlacedBuilding {
   readyToHarvest: boolean;
 }
 
+type SpriteCrop = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
+
 // ── 8 Building Definitions ───────────────────────────────────────────────────
 
 export const BUILDINGS: BuildingDef[] = [
   {
     id: 'farm-wheat',
-    name: 'Wheat Farm',
-    size: 2,
+    name: 'Carrot Farm',
+    size: 3,
     color: '#7b6a2e',
     accentColor: '#f5d06a',
     hotkey: '1',
-    description: 'Grows wheat for food and trade',
+    description: 'Grows carrots for food and trade',
     cost: 40,
   },
   {
     id: 'farm-potato',
-    name: 'Potato Farm',
-    size: 2,
+    name: 'Rice Farm',
+    size: 3,
     color: '#5a3f24',
     accentColor: '#d7b58c',
     hotkey: '2',
-    description: 'Grows potatoes for staples',
+    description: 'Grows rice for staples',
     cost: 50,
   },
   {
     id: 'farm-rice',
-    name: 'Rice Farm',
-    size: 2,
+    name: 'Cabbage Farm',
+    size: 3,
     color: '#214a3e',
     accentColor: '#b9f4c8',
     hotkey: '3',
-    description: 'Grows rice in wet fields',
+    description: 'Grows cabbage in wet fields',
     cost: 60,
   },
   {
     id: 'mine-copper',
     name: 'Copper Mine',
-    size: 2,
+    size: 3,
     color: '#7a3f1f',
     accentColor: '#f0a24a',
     hotkey: '4',
@@ -70,7 +77,7 @@ export const BUILDINGS: BuildingDef[] = [
   {
     id: 'mine-iron',
     name: 'Iron Mine',
-    size: 2,
+    size: 3,
     color: '#4a4f5a',
     accentColor: '#c2c7d2',
     hotkey: '5',
@@ -80,7 +87,7 @@ export const BUILDINGS: BuildingDef[] = [
   {
     id: 'mine-diamond',
     name: 'Diamond Mine',
-    size: 2,
+    size: 3,
     color: '#17384f',
     accentColor: '#7ed1ff',
     hotkey: '6',
@@ -90,7 +97,7 @@ export const BUILDINGS: BuildingDef[] = [
   {
     id: 'warehouse',
     name: 'Warehouse',
-    size: 3,
+    size: 4,
     color: '#3d3d45',
     accentColor: '#b4b4c8',
     hotkey: '7',
@@ -103,6 +110,81 @@ export const BUILDINGS: BuildingDef[] = [
 
 export function getBuildingDef(id: string): BuildingDef | undefined {
   return BUILDINGS.find((b) => b.id === id);
+}
+
+const FARM_SPRITE_SRC = '/assets/image.png';
+const FARM_SPRITE_SCALE = 1.0;
+const FARM_SPRITE_GRID = 1;
+const FARM_SPRITE_CROPS: Record<'farm-wheat' | 'farm-potato' | 'farm-rice', SpriteCrop> = {
+  'farm-wheat': { x: 304, y: 280, w: 128, h: 128 },
+  'farm-potato': { x: 528, y: 224, w: 128, h: 128 },
+  'farm-rice': { x: 416, y: 440, w: 128, h: 128 },
+};
+
+let farmSpriteImage: HTMLImageElement | null = null;
+let farmSpriteReady = false;
+
+function ensureFarmSprites(): void {
+  if (farmSpriteImage || typeof Image === 'undefined') return;
+  const img = new Image();
+  img.src = FARM_SPRITE_SRC;
+  img.decoding = 'async';
+  img.onload = () => {
+    farmSpriteReady = true;
+  };
+  farmSpriteImage = img;
+}
+
+function drawFarmSprite(
+  ctx: CanvasRenderingContext2D,
+  crop: SpriteCrop,
+  sx: number,
+  sy: number,
+  s: number,
+): boolean {
+  ensureFarmSprites();
+  if (!farmSpriteReady || !farmSpriteImage) return false;
+
+  const size = s * FARM_SPRITE_SCALE;
+  const pad = (s - size) / 2;
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  if (FARM_SPRITE_GRID <= 1) {
+    ctx.drawImage(
+      farmSpriteImage,
+      crop.x,
+      crop.y,
+      crop.w,
+      crop.h,
+      sx + pad,
+      sy + pad,
+      size,
+      size,
+    );
+  } else {
+    const inset = pad + size * 0.06;
+    const gap = size * 0.06;
+    const cell = (s - inset * 2 - gap) / FARM_SPRITE_GRID;
+    for (let row = 0; row < FARM_SPRITE_GRID; row++) {
+      for (let col = 0; col < FARM_SPRITE_GRID; col++) {
+        const dx = sx + inset + col * (cell + gap);
+        const dy = sy + inset + row * (cell + gap);
+        ctx.drawImage(
+          farmSpriteImage,
+          crop.x,
+          crop.y,
+          crop.w,
+          crop.h,
+          dx,
+          dy,
+          cell,
+          cell,
+        );
+      }
+    }
+  }
+  ctx.restore();
+  return true;
 }
 
 // ── Internal Drawing Utilities ───────────────────────────────────────────────
@@ -324,6 +406,7 @@ function drawFarmWheat(
   sy: number,
   s: number,
 ): void {
+  if (drawFarmSprite(ctx, FARM_SPRITE_CROPS['farm-wheat'], sx, sy, s)) return;
   const cx = sx + s / 2;
   const furrowColor = darken(def.color, 0.2);
   const pad = s * 0.12;
@@ -365,6 +448,7 @@ function drawFarmPotato(
   sy: number,
   s: number,
 ): void {
+  if (drawFarmSprite(ctx, FARM_SPRITE_CROPS['farm-potato'], sx, sy, s)) return;
   const furrowColor = darken(def.color, 0.25);
   const pad = s * 0.12;
   const rowCount = 3;
@@ -401,6 +485,7 @@ function drawFarmRice(
   sy: number,
   s: number,
 ): void {
+  if (drawFarmSprite(ctx, FARM_SPRITE_CROPS['farm-rice'], sx, sy, s)) return;
   const waterColor = darken(def.color, 0.15);
   const pad = s * 0.12;
   const rowCount = 3;

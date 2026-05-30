@@ -11,6 +11,60 @@ const CURSOR_FILL = 'rgba(0, 212, 255, 0.3)';
 const CURSOR_BORDER = 'rgba(0, 212, 255, 0.7)';
 const CURSOR_BORDER_WIDTH = 2;
 
+const TILESET_SRC = '/assets/GRASS+.png';
+const TILESET_TILE_SIZE = 16;
+
+const FORCED_TILE: [number, number] = [0, 0];
+
+let tilesetImage: HTMLImageElement | null = null;
+let tilesetReady = false;
+
+function ensureTileset(): void {
+  if (tilesetImage || typeof Image === 'undefined') return;
+  const img = new Image();
+  img.src = TILESET_SRC;
+  img.decoding = 'async';
+  img.onload = () => {
+    tilesetReady = true;
+  };
+  tilesetImage = img;
+}
+
+function chooseTile(col: number, row: number): [number, number] {
+  return FORCED_TILE;
+}
+
+function renderTerrain(
+  ctx: CanvasRenderingContext2D,
+  camera: Camera,
+  canvasWidth: number,
+  canvasHeight: number,
+): void {
+  ensureTileset();
+  if (!tilesetReady || !tilesetImage) return;
+
+  const bounds = getVisibleBounds(camera, canvasWidth, canvasHeight);
+  const tileScreenSize = TILE_SIZE * camera.zoom;
+
+  for (let row = bounds.minRow; row <= bounds.maxRow; row++) {
+    for (let col = bounds.minCol; col <= bounds.maxCol; col++) {
+      const screen = worldToScreen(camera, canvasWidth, canvasHeight, col * TILE_SIZE, row * TILE_SIZE);
+      const [tx, ty] = chooseTile(col, row);
+      ctx.drawImage(
+        tilesetImage,
+        tx * TILESET_TILE_SIZE,
+        ty * TILESET_TILE_SIZE,
+        TILESET_TILE_SIZE,
+        TILESET_TILE_SIZE,
+        screen.x,
+        screen.y,
+        tileScreenSize,
+        tileScreenSize,
+      );
+    }
+  }
+}
+
 /**
  * Render the infinite grid background.
  * Only draws grid lines for tiles currently visible in the viewport.
@@ -24,6 +78,9 @@ export function renderGrid(
   // 1. Fill the entire canvas with the dark background
   ctx.fillStyle = BG_COLOR;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+  // 1.5 Draw terrain tiles
+  renderTerrain(ctx, camera, canvasWidth, canvasHeight);
 
   // 2. Determine which tiles are visible
   const bounds = getVisibleBounds(camera, canvasWidth, canvasHeight);

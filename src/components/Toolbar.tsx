@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { BUILDINGS, BuildingDef, drawBuildingIcon } from '../game/buildings';
 
 interface ToolbarProps {
@@ -77,6 +78,14 @@ export default function Toolbar({ selectedBuildingId, removeMode, onSelectBuildi
           <div className="toolbar-remove-icon">X</div>
           <span className="toolbar-item-name">Remove</span>
         </button>
+
+        <Link href="/leaderboard" legacyBehavior>
+          <a className="toolbar-item toolbar-leaderboard" title="Leaderboard">
+            <span className="toolbar-hotkey">L</span>
+            <div className="toolbar-icon">🏆</div>
+            <span className="toolbar-item-name">Leaderboard</span>
+          </a>
+        </Link>
       </div>
     </div>
   );

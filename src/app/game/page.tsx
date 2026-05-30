@@ -267,15 +267,15 @@ export default function GamePage() {
                 <span className="hub-storage-value money">${inventory.money.toLocaleString()}</span>
               </li>
               <li className="hub-storage-item">
-                <span className="hub-storage-label">Wheat</span>
+                <span className="hub-storage-label">Carrot</span>
                 <span className="hub-storage-value wheat">{inventory.wheat.toLocaleString()}</span>
               </li>
               <li className="hub-storage-item">
-                <span className="hub-storage-label">Potato</span>
+                <span className="hub-storage-label">Rice</span>
                 <span className="hub-storage-value potato">{inventory.potato.toLocaleString()}</span>
               </li>
               <li className="hub-storage-item">
-                <span className="hub-storage-label">Rice</span>
+                <span className="hub-storage-label">Cabbage</span>
                 <span className="hub-storage-value rice">{inventory.rice.toLocaleString()}</span>
               </li>
               <li className="hub-storage-item">
