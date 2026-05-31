@@ -67,7 +67,7 @@ export const BUILDINGS: BuildingDef[] = [
   {
     id: 'mine-copper',
     name: 'Copper Mine',
-    size: 3,
+    size: 7,
     color: '#7a3f1f',
     accentColor: '#f0a24a',
     hotkey: '4',
@@ -77,7 +77,7 @@ export const BUILDINGS: BuildingDef[] = [
   {
     id: 'mine-iron',
     name: 'Iron Mine',
-    size: 3,
+    size: 7,
     color: '#4a4f5a',
     accentColor: '#c2c7d2',
     hotkey: '5',
@@ -87,7 +87,7 @@ export const BUILDINGS: BuildingDef[] = [
   {
     id: 'mine-diamond',
     name: 'Diamond Mine',
-    size: 3,
+    size: 7,
     color: '#17384f',
     accentColor: '#7ed1ff',
     hotkey: '6',
@@ -202,6 +202,211 @@ function tryDrawFarmSprite(
 ): boolean {
   if (!isFarmBuilding(def.id)) return false;
   return drawFarmSprite(ctx, FARM_SPRITE_CROPS[def.id], sx, sy, s);
+}
+
+// Mines sprite sheet (contains copper / iron / diamond icons)
+const MINE_SPRITE_SRC = '/assets/mines.png';
+const MINE_SPRITE_INSET = 0.08;
+
+let mineSpriteImage: HTMLImageElement | null = null;
+let mineSpriteReady = false;
+let mineSpriteCellW = 0;
+let mineSpriteCellH = 0;
+
+function ensureMineSprites(): void {
+  if (mineSpriteImage || typeof Image === 'undefined') return;
+  const img = new Image();
+  img.src = MINE_SPRITE_SRC;
+  img.decoding = 'async';
+  img.onload = () => {
+    // layout: three icons horizontally (copper, iron, diamond)
+    mineSpriteCellW = Math.floor(img.width / 3);
+    mineSpriteCellH = img.height;
+    mineSpriteReady = true;
+  };
+  mineSpriteImage = img;
+}
+
+function drawMineSprite(
+  ctx: CanvasRenderingContext2D,
+  def: BuildingDef,
+  sx: number,
+  sy: number,
+  s: number,
+): boolean {
+  ensureMineSprites();
+  if (!mineSpriteReady || !mineSpriteImage || mineSpriteCellW === 0) return false;
+
+  const idx = def.id === 'mine-copper' ? 0 : def.id === 'mine-iron' ? 1 : def.id === 'mine-diamond' ? 2 : -1;
+  if (idx < 0) return false;
+
+  const cropX = idx * mineSpriteCellW;
+  const cropY = 0;
+  const cropW = mineSpriteCellW;
+  const cropH = mineSpriteCellH;
+
+  const inset = s * MINE_SPRITE_INSET;
+  const box = s - inset * 2;
+  const aspect = cropW / cropH;
+  let dw = box;
+  let dh = box;
+  if (aspect > 1) {
+    dh = box / aspect;
+  } else if (aspect < 1) {
+    dw = box * aspect;
+  }
+  const dx = sx + inset + (box - dw) / 2;
+  const dy = sy + inset + (box - dh) / 2;
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(mineSpriteImage, cropX, cropY, cropW, cropH, dx, dy, dw, dh);
+  ctx.restore();
+  return true;
+}
+
+// Individual iron mine sprite (optional override)
+const IRON_SPRITE_SRC = '/assets/ironmine.png';
+const IRON_SPRITE_INSET = 0.08;
+
+let ironSpriteImage: HTMLImageElement | null = null;
+let ironSpriteReady = false;
+
+function ensureIronSprite(): void {
+  if (ironSpriteImage || typeof Image === 'undefined') return;
+  const img = new Image();
+  img.src = IRON_SPRITE_SRC;
+  img.decoding = 'async';
+  img.onload = () => {
+    ironSpriteReady = true;
+  };
+  ironSpriteImage = img;
+}
+
+function drawIronSprite(
+  ctx: CanvasRenderingContext2D,
+  def: BuildingDef,
+  sx: number,
+  sy: number,
+  s: number,
+): boolean {
+  ensureIronSprite();
+  if (!ironSpriteReady || !ironSpriteImage) return false;
+
+  const inset = s * IRON_SPRITE_INSET;
+  const box = s - inset * 2;
+  const aspect = ironSpriteImage.width / ironSpriteImage.height;
+  let dw = box;
+  let dh = box;
+  if (aspect > 1) {
+    dh = box / aspect;
+  } else if (aspect < 1) {
+    dw = box * aspect;
+  }
+  const dx = sx + inset + (box - dw) / 2;
+  const dy = sy + inset + (box - dh) / 2;
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(ironSpriteImage, 0, 0, ironSpriteImage.width, ironSpriteImage.height, dx, dy, dw, dh);
+  ctx.restore();
+  return true;
+}
+
+// Individual copper mine sprite (optional override)
+const COPPER_SPRITE_SRC = '/assets/coppermine.png';
+const COPPER_SPRITE_INSET = 0.08;
+
+let copperSpriteImage: HTMLImageElement | null = null;
+let copperSpriteReady = false;
+
+function ensureCopperSprite(): void {
+  if (copperSpriteImage || typeof Image === 'undefined') return;
+  const img = new Image();
+  img.src = COPPER_SPRITE_SRC;
+  img.decoding = 'async';
+  img.onload = () => {
+    copperSpriteReady = true;
+  };
+  copperSpriteImage = img;
+}
+
+function drawCopperSprite(
+  ctx: CanvasRenderingContext2D,
+  def: BuildingDef,
+  sx: number,
+  sy: number,
+  s: number,
+): boolean {
+  ensureCopperSprite();
+  if (!copperSpriteReady || !copperSpriteImage) return false;
+
+  const inset = s * COPPER_SPRITE_INSET;
+  const box = s - inset * 2;
+  const aspect = copperSpriteImage.width / copperSpriteImage.height;
+  let dw = box;
+  let dh = box;
+  if (aspect > 1) {
+    dh = box / aspect;
+  } else if (aspect < 1) {
+    dw = box * aspect;
+  }
+  const dx = sx + inset + (box - dw) / 2;
+  const dy = sy + inset + (box - dh) / 2;
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(copperSpriteImage, 0, 0, copperSpriteImage.width, copperSpriteImage.height, dx, dy, dw, dh);
+  ctx.restore();
+  return true;
+}
+
+// Individual diamond mine sprite (optional override)
+const DIAMOND_SPRITE_SRC = '/assets/diamondmine.png';
+const DIAMOND_SPRITE_INSET = 0.08;
+
+let diamondSpriteImage: HTMLImageElement | null = null;
+let diamondSpriteReady = false;
+
+function ensureDiamondSprite(): void {
+  if (diamondSpriteImage || typeof Image === 'undefined') return;
+  const img = new Image();
+  img.src = DIAMOND_SPRITE_SRC;
+  img.decoding = 'async';
+  img.onload = () => {
+    diamondSpriteReady = true;
+  };
+  diamondSpriteImage = img;
+}
+
+function drawDiamondSprite(
+  ctx: CanvasRenderingContext2D,
+  def: BuildingDef,
+  sx: number,
+  sy: number,
+  s: number,
+): boolean {
+  ensureDiamondSprite();
+  if (!diamondSpriteReady || !diamondSpriteImage) return false;
+
+  const inset = s * DIAMOND_SPRITE_INSET;
+  const box = s - inset * 2;
+  const aspect = diamondSpriteImage.width / diamondSpriteImage.height;
+  let dw = box;
+  let dh = box;
+  if (aspect > 1) {
+    dh = box / aspect;
+  } else if (aspect < 1) {
+    dw = box * aspect;
+  }
+  const dx = sx + inset + (box - dw) / 2;
+  const dy = sy + inset + (box - dh) / 2;
+
+  ctx.save();
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(diamondSpriteImage, 0, 0, diamondSpriteImage.width, diamondSpriteImage.height, dx, dy, dw, dh);
+  ctx.restore();
+  return true;
 }
 
 // ── Internal Drawing Utilities ───────────────────────────────────────────────
@@ -831,8 +1036,13 @@ export function drawBuilding(
   ctx.globalAlpha = alpha;
 
   const drewFarmSprite = tryDrawFarmSprite(ctx, def, screenX, screenY, totalSize);
+  const drewIronSprite = def.id === 'mine-iron' ? drawIronSprite(ctx, def, screenX, screenY, totalSize) : false;
+  const drewCopperSprite = def.id === 'mine-copper' ? drawCopperSprite(ctx, def, screenX, screenY, totalSize) : false;
+  const drewDiamondSprite = def.id === 'mine-diamond' ? drawDiamondSprite(ctx, def, screenX, screenY, totalSize) : false;
+  const isMine = def.id.startsWith('mine');
+  const drewMineSprite = isMine && !drewIronSprite && !drewCopperSprite && !drewDiamondSprite ? drawMineSprite(ctx, def, screenX, screenY, totalSize) : false;
 
-  if (!drewFarmSprite) {
+  if (!drewFarmSprite && !drewMineSprite && !drewIronSprite && !drewCopperSprite && !drewDiamondSprite) {
     drawBaseRect(ctx, def.color, screenX, screenY, totalSize, radius);
     switch (def.id) {
       case 'farm-wheat':
@@ -853,13 +1063,13 @@ export function drawBuilding(
     case 'farm-rice':
       break;
     case 'mine-copper':
-      drawMinerCopper(ctx, def, screenX, screenY, totalSize);
+      if (!drewCopperSprite && !drewMineSprite) drawMinerCopper(ctx, def, screenX, screenY, totalSize);
       break;
     case 'mine-iron':
-      drawMinerIron(ctx, def, screenX, screenY, totalSize);
+      if (!drewIronSprite && !drewMineSprite) drawMinerIron(ctx, def, screenX, screenY, totalSize);
       break;
     case 'mine-diamond':
-      drawMineDiamond(ctx, def, screenX, screenY, totalSize);
+      if (!drewDiamondSprite && !drewMineSprite) drawMineDiamond(ctx, def, screenX, screenY, totalSize);
       break;
     case 'warehouse':
       drawWarehouse(ctx, def, screenX, screenY, totalSize);
@@ -884,7 +1094,12 @@ export function drawBuildingIcon(
 
   const radius = Math.max(2, size * 0.1);
   const drewFarmSprite = tryDrawFarmSprite(ctx, def, x, y, size);
-  if (!drewFarmSprite) {
+  const drewIronIcon = def.id === 'mine-iron' ? drawIronSprite(ctx, def, x, y, size) : false;
+  const drewCopperIcon = def.id === 'mine-copper' ? drawCopperSprite(ctx, def, x, y, size) : false;
+  const drewDiamondIcon = def.id === 'mine-diamond' ? drawDiamondSprite(ctx, def, x, y, size) : false;
+  const isMineIcon = def.id.startsWith('mine');
+  const drewMineIcon = isMineIcon && !drewIronIcon && !drewCopperIcon && !drewDiamondIcon ? drawMineSprite(ctx, def, x, y, size) : false;
+  if (!drewFarmSprite && !drewMineIcon && !drewIronIcon && !drewCopperIcon && !drewDiamondIcon) {
     drawBaseRect(ctx, def.color, x, y, size, radius);
     switch (def.id) {
       case 'farm-wheat':
@@ -905,15 +1120,15 @@ export function drawBuildingIcon(
     case 'farm-rice':
       break;
     case 'mine-copper': {
-      drawMinerCopper(ctx, def, x, y, size);
+      if (!drewCopperIcon && !drewMineIcon) drawMinerCopper(ctx, def, x, y, size);
       break;
     }
     case 'mine-iron': {
-      drawMinerIron(ctx, def, x, y, size);
+      if (!drewIronIcon && !drewMineIcon) drawMinerIron(ctx, def, x, y, size);
       break;
     }
     case 'mine-diamond': {
-      drawMineDiamond(ctx, def, x, y, size);
+      if (!drewDiamondIcon && !drewMineIcon) drawMineDiamond(ctx, def, x, y, size);
       break;
     }
     case 'warehouse': {
