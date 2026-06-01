@@ -7,6 +7,20 @@
   overflow: auto;
 }
 
+/* Pixel-art header */
+.workers-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.pixel-art {
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  background: linear-gradient(180deg, rgba(10,10,15,0.8), rgba(20,20,30,0.6));
+  padding: 6px;
+}
+
 .page-title {
   font-size: 28px;
   color: var(--text-primary);

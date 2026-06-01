@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 
 import React from 'react';
 import { useAccount } from 'wagmi';
@@ -7,6 +7,7 @@ import { getWorkerCost, useGameStore } from '../../store/gameStore';
 import { getBuildingDef } from '../../game/buildings';
 import { loadBuildings } from '../../game/persistence';
 import './workers.css';
+import PixelArt from '../../components/PixelArt';
 
 export default function WorkersPage() {
   const { address } = useAccount();
@@ -65,6 +66,9 @@ export default function WorkersPage() {
 
   return (
     <div className="workers-page">
+      <div className="workers-header">
+        <PixelArt scale={6} />
+      </div>
       <h1 className="page-title">Factory Navigation</h1>
 
       <div className="dashboard-grid">
