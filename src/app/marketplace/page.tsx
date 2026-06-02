@@ -4,6 +4,7 @@ import React from 'react';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { useGameStore, type Inventory } from '../../store/gameStore';
+import HubPageShell from '../../components/HubPageShell';
 import './marketplace.css';
 
 type MarketKey = 'wheat' | 'potato' | 'rice' | 'iron_ore' | 'copper_ore' | 'diamond';
@@ -183,19 +184,17 @@ export default function MarketplacePage() {
   };
 
   return (
-    <div className="marketplace-page">
-      <header className="market-header">
-        <div>
-          <p className="market-kicker">Trade Floor</p>
-          <h1 className="market-title">Marketplace</h1>
-          <p className="market-subtitle">Sell produced goods and convert stock into credits.</p>
+    <HubPageShell
+      kicker="Trade Floor"
+      title="Marketplace"
+      subtitle="Sell produced goods and convert stock into credits. Prices shift with your warehouse supply."
+      headerAside={
+        <div className="market-balance hub-stat-chip">
+          <span className="market-balance-label hub-stat-label">Wallet Balance</span>
+          <span className="market-balance-value hub-stat-value">${inventory.money.toLocaleString()}</span>
         </div>
-        <div className="market-balance">
-          <span className="market-balance-label">Wallet Balance</span>
-          <span className="market-balance-value">${inventory.money.toLocaleString()}</span>
-        </div>
-      </header>
-
+      }
+    >
       <div className="market-grid">
         <section className="market-card market-board" style={{ animationDelay: '0.05s' }}>
           <div className="market-card-header">
@@ -310,6 +309,6 @@ export default function MarketplacePage() {
           </section>
         </aside>
       </div>
-    </div>
+    </HubPageShell>
   );
 }

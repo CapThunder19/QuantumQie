@@ -1,113 +1,11 @@
-.marketplace-page {
-  --market-edge: rgba(0, 212, 255, 0.28);
-  --market-panel: rgba(10, 10, 22, 0.9);
+:root {
   --market-ink: rgba(224, 224, 240, 0.9);
-
-  min-height: 100vh;
-  height: 100vh;
-  padding: 90px 48px 48px;
-  position: relative;
-  overflow: auto;
-}
-
-.marketplace-page::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 15% 20%, rgba(0, 212, 255, 0.08), transparent 40%),
-    radial-gradient(circle at 85% 10%, rgba(255, 140, 0, 0.08), transparent 35%),
-    radial-gradient(circle at 75% 80%, rgba(0, 255, 136, 0.08), transparent 45%),
-    repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 18px);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.marketplace-page > * {
-  position: relative;
-  z-index: 1;
-}
-
-.market-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 32px;
-  margin-bottom: 28px;
-  animation: fadeInUp 0.5s ease both;
-}
-
-.market-kicker {
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--accent-amber);
-  margin-bottom: 8px;
-}
-
-.market-title {
-  font-size: 32px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text-primary);
-  text-shadow: var(--shadow-glow-cyan);
-}
-
-.market-subtitle {
-  margin-top: 8px;
-  max-width: 480px;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.market-balance {
-  background: var(--market-panel);
-  border: 1px solid var(--market-edge);
-  border-radius: 14px;
-  padding: 16px 20px;
-  min-width: 220px;
-  text-align: right;
-  box-shadow: var(--shadow-panel);
-  backdrop-filter: blur(var(--glass-blur));
-}
-
-.market-balance-label {
-  display: block;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-}
-
-.market-balance-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--accent-green);
 }
 
 .market-grid {
   display: grid;
   grid-template-columns: minmax(0, 2.1fr) minmax(260px, 1fr);
   gap: 24px;
-}
-
-.market-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 14px;
-  padding: 24px;
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  box-shadow: var(--shadow-panel);
-  animation: fadeInUp 0.45s ease both;
-}
-
-.market-card h2 {
-  font-size: 15px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--accent-cyan);
 }
 
 .market-card-header {
@@ -201,53 +99,6 @@
   flex-direction: column;
   gap: 8px;
   min-width: 120px;
-}
-
-.market-btn {
-  background: rgba(0, 212, 255, 0.08);
-  border: 1px solid rgba(0, 212, 255, 0.4);
-  color: var(--accent-cyan);
-  padding: 8px 12px;
-  border-radius: 8px;
-  text-transform: uppercase;
-  font-size: 11px;
-  font-weight: 600;
-  font-family: 'JetBrains Mono', monospace;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.market-btn:hover:not(:disabled) {
-  border-color: var(--accent-cyan);
-  box-shadow: var(--shadow-glow-cyan);
-  transform: translateY(-1px);
-}
-
-.market-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.market-btn-accent {
-  background: rgba(255, 140, 0, 0.1);
-  border-color: rgba(255, 140, 0, 0.5);
-  color: var(--accent-amber);
-}
-
-.market-btn-accent:hover:not(:disabled) {
-  box-shadow: var(--shadow-glow-amber);
-  border-color: var(--accent-amber);
-}
-
-.market-btn-ghost {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: var(--text-secondary);
-}
-
-.market-btn-ghost:hover:not(:disabled) {
-  border-color: var(--accent-cyan);
-  color: var(--text-primary);
 }
 
 .market-sidebar {
@@ -348,10 +199,6 @@
 }
 
 @media (max-width: 1100px) {
-  .marketplace-page {
-    padding: 90px 32px 40px;
-  }
-
   .market-grid {
     grid-template-columns: 1fr;
   }
@@ -362,15 +209,6 @@
 }
 
 @media (max-width: 720px) {
-  .marketplace-page {
-    padding: 90px 20px 32px;
-  }
-
-  .market-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .market-item {
     grid-template-columns: 1fr;
   }

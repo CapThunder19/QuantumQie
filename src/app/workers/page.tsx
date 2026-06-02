@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 
 import React from 'react';
 import { useAccount } from 'wagmi';
@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { getWorkerCost, useGameStore } from '../../store/gameStore';
 import { getBuildingDef } from '../../game/buildings';
 import { loadBuildings } from '../../game/persistence';
-import './workers.css';
+import HubPageShell from '../../components/HubPageShell';
 import PixelArt from '../../components/PixelArt';
+import './workers.css';
 
 export default function WorkersPage() {
   const { address } = useAccount();
@@ -15,7 +16,7 @@ export default function WorkersPage() {
   const { inventory, workers, buyWorker, hydrateFromSupabase, isHydrated, isHydrating } = useGameStore();
   const [storageLoading, setStorageLoading] = React.useState(true);
   const [storageList, setStorageList] = React.useState<{ total: number; items: { id: string; name: string; count: number }[] }>(
-    { total: 0, items: [] }
+    { total: 0, items: [] },
   );
 
   React.useEffect(() => {
@@ -51,10 +52,14 @@ export default function WorkersPage() {
 
   if (!isHydrated && isHydrating) {
     return (
-      <div className="workers-page">
-        <h1 className="page-title">Factory Navigation</h1>
+      <HubPageShell
+        kicker="Settlement Crew"
+        title="Worker Hub"
+        subtitle="Loading your factory roster from the cloud save..."
+        showHubLinks={false}
+      >
         <p className="empty-roster">Loading factory data...</p>
-      </div>
+      </HubPageShell>
     );
   }
 
@@ -65,14 +70,23 @@ export default function WorkersPage() {
   const minerCost = getWorkerCost('miner', workers);
 
   return (
-    <div className="workers-page">
-      <div className="workers-header">
-        <PixelArt scale={6} />
+    <HubPageShell
+      kicker="Settlement Crew"
+      title="Worker Hub"
+      subtitle="Hire farmers and miners, then assign them to plots on the Factory Hub grid."
+      headerAside={
+        <div className="hub-stat-chip">
+          <span className="hub-stat-label">Treasury</span>
+          <span className="hub-stat-value">${inventory.money.toLocaleString()}</span>
+        </div>
+      }
+    >
+      <div className="workers-header-row">
+        <PixelArt scale={5} />
+        <p className="workers-hint">Workers auto-sync when you return to the Factory Hub.</p>
       </div>
-      <h1 className="page-title">Factory Navigation</h1>
 
       <div className="dashboard-grid">
-        {/* Shop Section */}
         <section className="dashboard-card shop-card">
           <h2>Hiring Bay</h2>
           <div className="shop-grid">
@@ -80,46 +94,35 @@ export default function WorkersPage() {
               <div className="shop-icon farmer-icon">👨‍🌾</div>
               <div className="shop-info">
                 <h3>Farmer</h3>
-                <p>Produces Wheat, Potato, Rice at Farms</p>
-                <button 
-                  className="buy-btn" 
-                  onClick={handleBuyFarmer}
-                  disabled={inventory.money < farmerCost}
-                >
-                  Buy for ${farmerCost.toLocaleString()}
+                <p>Produces carrots, rice, and cabbage at farms.</p>
+                <button className="buy-btn" onClick={handleBuyFarmer} disabled={inventory.money < farmerCost}>
+                  Hire ${farmerCost.toLocaleString()}
                 </button>
               </div>
             </div>
-            
+
             <div className="shop-item">
               <div className="shop-icon miner-icon">⛏️</div>
               <div className="shop-info">
                 <h3>Miner</h3>
-                <p>Extracts Ores at Mines</p>
-                <button 
-                  className="buy-btn" 
-                  onClick={handleBuyMiner}
-                  disabled={inventory.money < minerCost}
-                >
-                  Buy for ${minerCost.toLocaleString()}
+                <p>Extracts ore at copper, iron, and diamond mines.</p>
+                <button className="buy-btn" onClick={handleBuyMiner} disabled={inventory.money < minerCost}>
+                  Hire ${minerCost.toLocaleString()}
                 </button>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Available Workers */}
         <section className="dashboard-card available-card">
-          <h2>Available Workers ({availableWorkers.length})</h2>
+          <h2>Idle Workers ({availableWorkers.length})</h2>
           {availableWorkers.length === 0 ? (
             <p className="empty-roster">No idle workers right now.</p>
           ) : (
             <ul className="worker-list">
               {availableWorkers.map((w) => (
                 <li key={w.id} className="worker-list-item">
-                  <div className="worker-type">
-                    {w.type === 'farmer' ? '👨‍🌾 Farmer' : '⛏️ Miner'}
-                  </div>
+                  <div className="worker-type">{w.type === 'farmer' ? '👨‍🌾 Farmer' : '⛏️ Miner'}</div>
                   <div className="worker-status idle">Available</div>
                 </li>
               ))}
@@ -127,11 +130,10 @@ export default function WorkersPage() {
           )}
         </section>
 
-        {/* Storage Houses */}
         <section className="dashboard-card storage-card">
-          <h2>Storage Houses ({storageList.total})</h2>
+          <h2>Placed Structures ({storageList.total})</h2>
           {storageLoading ? (
-            <p className="empty-roster">Loading storage list...</p>
+            <p className="empty-roster">Loading structure list...</p>
           ) : storageList.items.length === 0 ? (
             <p className="empty-roster">No farms or mines placed yet.</p>
           ) : (
@@ -146,20 +148,17 @@ export default function WorkersPage() {
           )}
         </section>
 
-        {/* Roster Section */}
         <section className="dashboard-card roster-card">
-          <h2>Workers ({workers.length})</h2>
+          <h2>Full Roster ({workers.length})</h2>
           {workers.length === 0 ? (
-            <p className="empty-roster">You have no workers yet. Buy some from the shop!</p>
+            <p className="empty-roster">You have no workers yet. Hire some from the bay above.</p>
           ) : (
             <ul className="worker-list worker-list-scroll">
               {workers.map((w) => (
                 <li key={w.id} className="worker-list-item">
-                  <div className="worker-type">
-                    {w.type === 'farmer' ? '👨‍🌾 Farmer' : '⛏️ Miner'}
-                  </div>
+                  <div className="worker-type">{w.type === 'farmer' ? '👨‍🌾 Farmer' : '⛏️ Miner'}</div>
                   <div className={`worker-status ${w.assignedBuildingId ? 'assigned' : 'idle'}`}>
-                    {w.assignedBuildingId ? 'Working on Grid' : 'Idle (Waiting for assignment)'}
+                    {w.assignedBuildingId ? 'On assignment' : 'Idle'}
                   </div>
                 </li>
               ))}
@@ -167,6 +166,6 @@ export default function WorkersPage() {
           )}
         </section>
       </div>
-    </div>
+    </HubPageShell>
   );
 }

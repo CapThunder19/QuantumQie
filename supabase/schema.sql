@@ -1,7 +1,19 @@
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS village_name text not null default '';
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS money bigint not null default 0;
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS food bigint not null default 0;
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS wheat bigint not null default 0;
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS potato bigint not null default 0;
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS rice bigint not null default 0;
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS iron_ore bigint not null default 0;
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS copper_ore bigint not null default 0;
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS diamond bigint not null default 0;
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS updated_at timestamptz not null default now();
+
 create table if not exists inventory (
   save_id text primary key,
   money bigint not null default 0,
   food bigint not null default 0,
+  village_name text not null default '',
   wheat bigint not null default 0,
   potato bigint not null default 0,
   rice bigint not null default 0,

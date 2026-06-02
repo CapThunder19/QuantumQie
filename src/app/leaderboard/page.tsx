@@ -1,9 +1,12 @@
 import React from 'react';
 import { headers } from 'next/headers';
 import Leaderboard from '../../components/Leaderboard';
+import HubPageShell from '../../components/HubPageShell';
 
 type Row = {
   save_id: string;
+  wallet_address: string;
+  village_name: string;
   score: number;
   updated_at?: string;
 };
@@ -34,10 +37,12 @@ export default async function LeaderboardPage() {
   const { rows, error } = await loadLeaderboard();
 
   return (
-    <main className="page-content">
-      <section style={{ maxWidth: 920, margin: '24px auto' }}>
-        <Leaderboard initialRows={rows} initialError={error} />
-      </section>
-    </main>
+    <HubPageShell
+      kicker="Global Rankings"
+      title="Leaderboard"
+      subtitle="Top settlements ranked by wealth, crops, and mined resources saved on-chain."
+    >
+      <Leaderboard initialRows={rows} initialError={error} />
+    </HubPageShell>
   );
 }

@@ -16,6 +16,7 @@ import {
   reserveSepoliaListing,
   type SepoliaListing,
 } from '../../game/sepoliaMarket';
+import HubPageShell from '../../components/HubPageShell';
 import './sepolia-exchange.css';
 
 function shortAddress(address: string): string {
@@ -208,20 +209,17 @@ export default function SepoliaExchangePage() {
   const storageLoading = isHydrating && !isHydrated;
 
   return (
-    <div className="sepolia-exchange-page">
-      <header className="exchange-hero">
-        <div>
-          <p className="exchange-kicker">Sepolia Settlement</p>
-          <h1 className="exchange-title">Public Produce Exchange</h1>
-          <p className="exchange-subtitle">
-            List farm and mine output for direct Sepolia payment. Buyers pay your wallet on-chain and the listing updates in Supabase.
-          </p>
-        </div>
-
-        <div className="exchange-wallet-card">
-          <span className="exchange-wallet-label">Wallet</span>
-          <span className="exchange-wallet-value">{isConnected && address ? shortAddress(address) : 'Not connected'}</span>
-          <span className="exchange-wallet-meta">Sepolia balance {currentBalance} ETH</span>
+    <HubPageShell
+      kicker="Sepolia Settlement"
+      title="Public Exchange"
+      subtitle="List farm and mine output for direct Sepolia payment. Buyers pay your wallet on-chain and listings sync through Supabase."
+      headerAside={
+        <div className="exchange-wallet-card hub-stat-chip">
+          <span className="exchange-wallet-label hub-stat-label">Wallet</span>
+          <span className="exchange-wallet-value hub-stat-value">
+            {isConnected && address ? shortAddress(address) : 'Not connected'}
+          </span>
+          <span className="exchange-wallet-meta">Sepolia {currentBalance} ETH</span>
           {!isSepolia ? (
             <button className="exchange-btn exchange-btn-accent" onClick={handleSwitchToSepolia} disabled={isSwitchingChain}>
               Switch to Sepolia
@@ -230,8 +228,8 @@ export default function SepoliaExchangePage() {
             <span className="exchange-chain-pill">Sepolia active</span>
           )}
         </div>
-      </header>
-
+      }
+    >
       {(statusMessage || errorMessage) && (
         <div className={`exchange-banner ${errorMessage ? 'error' : 'success'}`}>
           {errorMessage ?? statusMessage}
@@ -364,6 +362,6 @@ export default function SepoliaExchangePage() {
           )}
         </section>
       </div>
-    </div>
+    </HubPageShell>
   );
 }

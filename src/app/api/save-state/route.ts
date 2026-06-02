@@ -10,6 +10,7 @@ type InventoryRow = {
   iron_ore: number;
   copper_ore: number;
   diamond: number;
+  village_name?: string;
 };
 
 type LegacyInventoryRow = {

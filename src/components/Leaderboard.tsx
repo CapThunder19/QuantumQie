@@ -4,9 +4,15 @@ import React from 'react';
 
 type Row = {
   save_id: string;
+  wallet_address: string;
+  village_name: string;
   score: number;
   updated_at?: string;
 };
+
+function formatAddress(value: string): string {
+  return value.length > 12 ? `${value.slice(0, 6)}...${value.slice(-4)}` : value;
+}
 
 type LeaderboardProps = {
   initialRows?: Row[];
@@ -47,25 +53,32 @@ export default function Leaderboard({ initialRows = [], initialError = null }: L
     }
   }, []);
 
+  React.useEffect(() => {
+    void fetchRows();
+  }, [fetchRows]);
+
   return (
     <div className="leaderboard-panel">
       <div className="leaderboard-header">
-        <h3>Leaderboard</h3>
-        <div>
-          <button onClick={fetchRows} disabled={loading} className="btn">Refresh</button>
-        </div>
+        <p className="leaderboard-tagline">Rankings refresh from your Supabase save scores.</p>
+        <button onClick={fetchRows} disabled={loading} className="btn">
+          {loading ? 'Loading...' : 'Refresh'}
+        </button>
       </div>
 
       <div className="leaderboard-meta">Rows: {rows.length}</div>
       {error && !loading && <div className="leaderboard-error">{error}</div>}
       {loading ? (
-        <div>Loading...</div>
+        <p className="empty-roster">Loading rankings...</p>
       ) : (
         <ol className="leaderboard-list">
           {rows.map((r, idx) => (
             <li key={r.save_id} className="leaderboard-row">
               <span className="rank">#{idx + 1}</span>
-              <span className="name">{r.save_id}</span>
+              <span className="leaderboard-name-block">
+                <span className="name">{r.village_name}</span>
+                <span className="wallet">{formatAddress(r.wallet_address)}</span>
+              </span>
               <span className="score">{r.score.toLocaleString()}</span>
             </li>
           ))}

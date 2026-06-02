@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { useRouter } from 'next/navigation';
@@ -21,7 +22,7 @@ export default function WalletButton() {
     try {
       disconnect();
     } finally {
-      router.push('/');
+      router.replace('/');
     }
   };
 
@@ -29,7 +30,14 @@ export default function WalletButton() {
     return (
       <div className="wallet-button">
         <span className="wallet-address">{address.slice(0, 6)}...{address.slice(-4)}</span>
-        <button className="btn-logout" onClick={handleLogout}>Logout</button>
+        <div className="wallet-actions">
+          <Link href="/profile" className="wallet-profile-link">
+            Profile
+          </Link>
+          <button className="btn-logout" onClick={handleLogout} type="button">
+            Logout
+          </button>
+        </div>
       </div>
     );
   }

@@ -10,15 +10,22 @@ type InventoryRow = {
   iron_ore: number;
   copper_ore: number;
   diamond: number;
+  village_name?: string | null;
   food?: number | null;
   updated_at?: string;
 };
 
 type LeaderboardRow = {
   save_id: string;
+  wallet_address: string;
+  village_name: string;
   score: number;
   updated_at?: string;
 };
+
+function formatWalletAddress(saveId: string): string {
+  return saveId.startsWith('wallet:') ? saveId.slice('wallet:'.length) : saveId;
+}
 
 function toNumber(value: unknown): number {
   if (typeof value === 'number') return value;
@@ -70,7 +77,7 @@ export async function GET() {
     );
   }
 
-  const fullSelect = 'save_id, money, wheat, potato, rice, iron_ore, copper_ore, diamond, food, updated_at';
+  const fullSelect = 'save_id, money, wheat, potato, rice, iron_ore, copper_ore, diamond, village_name, food, updated_at';
   let data: InventoryRow[] | null = null;
   let error: { message: string } | null = null;
 
@@ -99,6 +106,8 @@ export async function GET() {
   const rows: LeaderboardRow[] = (data ?? [])
     .map((row) => ({
       save_id: row.save_id,
+      wallet_address: formatWalletAddress(row.save_id),
+      village_name: typeof row.village_name === 'string' && row.village_name.trim().length > 0 ? row.village_name.trim() : 'Unnamed Village',
       score: computeScore(row),
       updated_at: row.updated_at,
     }))

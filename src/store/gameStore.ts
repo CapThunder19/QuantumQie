@@ -21,6 +21,7 @@ export interface Inventory {
 
 interface GameState {
   userAddress: string | null;
+  villageName: string;
   inventory: Inventory;
   workers: Worker[];
   isHydrated: boolean;
@@ -28,6 +29,7 @@ interface GameState {
   
   // Actions
   setUserAddress: (address: string | null) => void;
+  setVillageName: (name: string) => Promise<boolean>;
   buyWorker: (type: WorkerType) => boolean;
   assignWorker: (workerId: string, buildingId: string) => void;
   unassignWorker: (workerId: string) => void;
@@ -71,6 +73,7 @@ type InventoryRow = {
   iron_ore: number;
   copper_ore: number;
   diamond: number;
+  village_name?: string;
   food?: number;
 };
 
@@ -115,6 +118,10 @@ function normalizeInventory(row?: Partial<InventoryRow> | null): Inventory {
   }
 
   return base;
+}
+
+function normalizeVillageName(row?: Partial<InventoryRow> | null): string {
+  return typeof row?.village_name === 'string' ? row.village_name.trim() : '';
 }
 
 function mapWorkerRow(row: WorkerRow): Worker {
@@ -172,8 +179,8 @@ export const useGameStore = create<GameState>((set, get) => {
       return false;
     }
 
-    const { inventory, workers } = get();
-    const inventoryRow: InventoryRow = { save_id: saveId, ...inventory };
+    const { inventory, workers, villageName } = get();
+    const inventoryRow: InventoryRow = { save_id: saveId, ...inventory, village_name: villageName.trim() };
     const legacyInventoryRow = toLegacyInventoryRow(saveId, inventory);
     const workerRows: WorkerRow[] = workers.map((worker) => ({
       id: worker.id,
@@ -261,11 +268,12 @@ export const useGameStore = create<GameState>((set, get) => {
 
     const inventoryResponse = await client
       .from('inventory')
-      .select('save_id, money, wheat, potato, rice, iron_ore, copper_ore, diamond, food')
+      .select('save_id, money, wheat, potato, rice, iron_ore, copper_ore, diamond, village_name, food')
       .eq('save_id', saveId)
       .maybeSingle();
 
     let inventory = normalizeInventory(inventoryResponse.data ?? undefined);
+    let villageName = normalizeVillageName(inventoryResponse.data ?? undefined);
 
     if (inventoryResponse.error) {
       console.warn('Supabase inventory load failed:', inventoryResponse.error.message);
@@ -280,11 +288,12 @@ export const useGameStore = create<GameState>((set, get) => {
         console.warn('Supabase legacy inventory load failed:', legacyInventoryResponse.error.message);
       } else {
         inventory = normalizeInventory(legacyInventoryResponse.data ?? undefined);
+        villageName = normalizeVillageName(legacyInventoryResponse.data ?? undefined);
       }
     }
 
     if (!inventoryResponse.data && !inventoryResponse.error) {
-      await client.from('inventory').upsert({ save_id: saveId, ...inventory }, { onConflict: 'save_id' });
+      await client.from('inventory').upsert({ save_id: saveId, ...inventory, village_name: villageName }, { onConflict: 'save_id' });
     }
 
     const workersResponse = await client
@@ -298,11 +307,12 @@ export const useGameStore = create<GameState>((set, get) => {
 
     const workers = (workersResponse.data ?? []).map(mapWorkerRow);
 
-    set({ inventory, workers, isHydrated: true, isHydrating: false });
+    set({ inventory, workers, villageName, isHydrated: true, isHydrating: false });
   };
 
   return {
     userAddress: null,
+    villageName: '',
     inventory: { ...DEFAULT_INVENTORY },
     workers: [],
     isHydrated: false,
@@ -318,6 +328,7 @@ export const useGameStore = create<GameState>((set, get) => {
         userAddress: normalized,
         isHydrated: false,
         isHydrating: false,
+        villageName: '',
         inventory: { ...DEFAULT_INVENTORY },
         workers: [],
       });
@@ -347,6 +358,13 @@ export const useGameStore = create<GameState>((set, get) => {
         return true;
       }
       return false;
+    },
+
+    setVillageName: async (name: string) => {
+      const villageName = name.trim();
+
+      set({ villageName });
+      return saveState();
     },
 
     assignWorker: (workerId: string, buildingId: string) => {
