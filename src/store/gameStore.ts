@@ -22,6 +22,7 @@ export interface Inventory {
 interface GameState {
   userAddress: string | null;
   villageName: string;
+  level: number;
   inventory: Inventory;
   workers: Worker[];
   isHydrated: boolean;
@@ -30,6 +31,7 @@ interface GameState {
   // Actions
   setUserAddress: (address: string | null) => void;
   setVillageName: (name: string) => Promise<boolean>;
+  upgradeLevel: () => boolean;
   buyWorker: (type: WorkerType) => boolean;
   assignWorker: (workerId: string, buildingId: string) => void;
   unassignWorker: (workerId: string) => void;
@@ -75,6 +77,7 @@ type InventoryRow = {
   diamond: number;
   village_name?: string;
   food?: number;
+  level?: number;
 };
 
 type LegacyInventoryRow = {
@@ -179,8 +182,8 @@ export const useGameStore = create<GameState>((set, get) => {
       return false;
     }
 
-    const { inventory, workers, villageName } = get();
-    const inventoryRow: InventoryRow = { save_id: saveId, ...inventory, village_name: villageName.trim() };
+    const { inventory, workers, villageName, level } = get();
+    const inventoryRow: InventoryRow = { save_id: saveId, ...inventory, village_name: villageName.trim(), level };
     const legacyInventoryRow = toLegacyInventoryRow(saveId, inventory);
     const workerRows: WorkerRow[] = workers.map((worker) => ({
       id: worker.id,
@@ -268,12 +271,13 @@ export const useGameStore = create<GameState>((set, get) => {
 
     const inventoryResponse = await client
       .from('inventory')
-      .select('save_id, money, wheat, potato, rice, iron_ore, copper_ore, diamond, village_name, food')
+      .select('save_id, money, wheat, potato, rice, iron_ore, copper_ore, diamond, village_name, food, level')
       .eq('save_id', saveId)
       .maybeSingle();
 
     let inventory = normalizeInventory(inventoryResponse.data ?? undefined);
     let villageName = normalizeVillageName(inventoryResponse.data ?? undefined);
+    let level = typeof inventoryResponse.data?.level === 'number' ? inventoryResponse.data.level : 1;
 
     if (inventoryResponse.error) {
       console.warn('Supabase inventory load failed:', inventoryResponse.error.message);
@@ -293,7 +297,7 @@ export const useGameStore = create<GameState>((set, get) => {
     }
 
     if (!inventoryResponse.data && !inventoryResponse.error) {
-      await client.from('inventory').upsert({ save_id: saveId, ...inventory, village_name: villageName }, { onConflict: 'save_id' });
+      await client.from('inventory').upsert({ save_id: saveId, ...inventory, village_name: villageName, level }, { onConflict: 'save_id' });
     }
 
     const workersResponse = await client
@@ -307,12 +311,13 @@ export const useGameStore = create<GameState>((set, get) => {
 
     const workers = (workersResponse.data ?? []).map(mapWorkerRow);
 
-    set({ inventory, workers, villageName, isHydrated: true, isHydrating: false });
+    set({ inventory, workers, villageName, level, isHydrated: true, isHydrating: false });
   };
 
   return {
     userAddress: null,
     villageName: '',
+    level: 1,
     inventory: { ...DEFAULT_INVENTORY },
     workers: [],
     isHydrated: false,
@@ -329,6 +334,7 @@ export const useGameStore = create<GameState>((set, get) => {
         isHydrated: false,
         isHydrating: false,
         villageName: '',
+        level: 1,
         inventory: { ...DEFAULT_INVENTORY },
         workers: [],
       });
@@ -365,6 +371,27 @@ export const useGameStore = create<GameState>((set, get) => {
 
       set({ villageName });
       return saveState();
+    },
+
+    upgradeLevel: () => {
+      const { inventory, level } = get();
+      if (level === 1 && inventory.money >= 5000) {
+        set({
+          level: 2,
+          inventory: { ...inventory, money: inventory.money - 5000 },
+        });
+        void saveState();
+        return true;
+      }
+      if (level === 2 && inventory.money >= 10000) {
+        set({
+          level: 3,
+          inventory: { ...inventory, money: inventory.money - 10000 },
+        });
+        void saveState();
+        return true;
+      }
+      return false;
     },
 
     assignWorker: (workerId: string, buildingId: string) => {

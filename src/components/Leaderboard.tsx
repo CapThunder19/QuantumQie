@@ -1,6 +1,7 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
+import VillageViewer from './VillageViewer';
 
 type Row = {
   save_id: string;
@@ -20,9 +21,10 @@ type LeaderboardProps = {
 };
 
 export default function Leaderboard({ initialRows = [], initialError = null }: LeaderboardProps) {
-  const [rows, setRows] = React.useState<Row[]>(initialRows);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(initialError);
+  const [rows, setRows] = useState<Row[]>(initialRows);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(initialError);
+  const [viewingVillage, setViewingVillage] = useState<{ saveId: string; villageName: string } | null>(null);
 
   const fetchRows = React.useCallback(async () => {
     setLoading(true);
@@ -80,10 +82,24 @@ export default function Leaderboard({ initialRows = [], initialError = null }: L
                 <span className="wallet">{formatAddress(r.wallet_address)}</span>
               </span>
               <span className="score">{r.score.toLocaleString()}</span>
+              <button 
+                className="btn btn-view-village" 
+                onClick={() => setViewingVillage({ saveId: r.save_id, villageName: r.village_name })}
+              >
+                View Village
+              </button>
             </li>
           ))}
           {rows.length === 0 && !error && <li>Click Refresh to load the leaderboard.</li>}
         </ol>
+      )}
+
+      {viewingVillage && (
+        <VillageViewer 
+          saveId={viewingVillage.saveId} 
+          villageName={viewingVillage.villageName} 
+          onClose={() => setViewingVillage(null)} 
+        />
       )}
     </div>
   );

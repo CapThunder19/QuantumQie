@@ -479,6 +479,80 @@ html, body {
   background: rgba(255, 51, 68, 0.12);
 }
 
+.toolbar-item.locked {
+  opacity: 0.6;
+  filter: grayscale(100%);
+  cursor: not-allowed;
+}
+
+.toolbar-lock-overlay {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: rgba(255, 51, 68, 0.9);
+  color: #fff;
+  font-size: 8px;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 4px;
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+
+.level-upgrade-card {
+  margin-bottom: 12px;
+}
+
+.level-progress {
+  display: flex;
+  gap: 4px;
+  margin: 12px 0;
+}
+
+.level-step {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.level-step.active {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+  border-color: rgba(0, 212, 255, 0.8);
+}
+
+.level-upgrade-btn {
+  width: 100%;
+  margin-top: 8px;
+  font-size: 10px;
+}
+
+.level-upgrade-btn.affordable {
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--accent-cyan);
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 4px 0 rgba(0, 80, 100, 0.8), 0 0 10px rgba(0, 212, 255, 0.2);
+}
+
+.level-upgrade-btn.affordable:hover {
+  background: rgba(0, 212, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 rgba(0, 80, 100, 0.8), 0 0 15px rgba(0, 212, 255, 0.4);
+}
+
+.level-maxed {
+  font-size: 10px;
+  color: var(--accent-green);
+  text-align: center;
+  margin-top: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 /* ========================================
    Minimap
    ======================================== */

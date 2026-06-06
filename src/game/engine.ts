@@ -108,7 +108,7 @@ export function tick(engine: GameEngine, timestamp: number): void {
   if (engine.input.selectedBuildingId) {
     const selectedDef = getBuildingDef(engine.input.selectedBuildingId);
     const selectedCost = selectedDef?.cost ?? 0;
-    engine.input.canAffordPlacement = store.inventory.money >= selectedCost;
+    engine.input.canAffordPlacement = store.level >= (selectedDef?.minLevel ?? 1) && store.inventory.money >= selectedCost;
   } else {
     engine.input.canAffordPlacement = true;
   }
@@ -132,7 +132,7 @@ export function tick(engine: GameEngine, timestamp: number): void {
       const def = getBuildingDef(engine.input.selectedBuildingId);
       if (def) {
         const cost = def.cost ?? 0;
-        if (store.inventory.money >= cost) {
+        if (store.level >= def.minLevel && store.inventory.money >= cost) {
           const placed = placeBuilding(
             engine.world,
             def.id,

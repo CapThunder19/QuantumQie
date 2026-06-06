@@ -7,6 +7,7 @@ import { useShallow } from 'zustand/shallow';
 import Toolbar from '../../components/Toolbar';
 import HUD from '../../components/HUD';
 import BuildingInfo from '../../components/BuildingInfo';
+import LevelUpgrade from '../../components/LevelUpgrade';
 import { createEngine, tick, GameEngine } from '../../game/engine';
 import { setupInputHandlers } from '../../game/input';
 import { getBuildingAt } from '../../game/placement';
@@ -28,11 +29,12 @@ export default function GamePage() {
   const minimapCanvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
   const requestRef = useRef<number | null>(null);
-  const { hydrateFromSupabase, inventory, isHydrated, isHydrating, workers, userAddress, flushToSupabase } = useGameStore(
+  const { hydrateFromSupabase, inventory, level, isHydrated, isHydrating, workers, userAddress, flushToSupabase } = useGameStore(
     useShallow((state) => ({
       hydrateFromSupabase: state.hydrateFromSupabase,
       flushToSupabase: state.flushToSupabase,
       inventory: state.inventory,
+      level: state.level,
       isHydrated: state.isHydrated,
       isHydrating: state.isHydrating,
       workers: state.workers,
@@ -253,6 +255,7 @@ export default function GamePage() {
       />
 
       <aside className="hub-side-panel">
+        <LevelUpgrade />
         <section className="hub-side-card hub-storage-panel">
           <div className="hub-panel-title">
             <span>Storage</span>
@@ -348,6 +351,7 @@ export default function GamePage() {
       </div>
 
       <Toolbar 
+        level={level}
         selectedBuildingId={selectedBuildingId} 
         removeMode={removeMode}
         onSelectBuilding={handleSelectBuilding}

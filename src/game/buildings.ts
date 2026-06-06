@@ -11,6 +11,7 @@ export interface BuildingDef {
   hotkey: string; // '1' through '8'
   description: string;
   cost: number;
+  minLevel: number;
 }
 
 export interface PlacedBuilding {
@@ -43,6 +44,7 @@ export const BUILDINGS: BuildingDef[] = [
     hotkey: '1',
     description: 'Grows carrots for food and trade',
     cost: 40,
+    minLevel: 1,
   },
   {
     id: 'farm-potato',
@@ -53,6 +55,7 @@ export const BUILDINGS: BuildingDef[] = [
     hotkey: '2',
     description: 'Grows rice for staples',
     cost: 50,
+    minLevel: 1,
   },
   {
     id: 'farm-rice',
@@ -63,6 +66,7 @@ export const BUILDINGS: BuildingDef[] = [
     hotkey: '3',
     description: 'Grows cabbage in wet fields',
     cost: 60,
+    minLevel: 1,
   },
   {
     id: 'mine-copper',
@@ -73,6 +77,7 @@ export const BUILDINGS: BuildingDef[] = [
     hotkey: '4',
     description: 'Extracts copper ore',
     cost: 90,
+    minLevel: 2,
   },
   {
     id: 'mine-iron',
@@ -83,6 +88,7 @@ export const BUILDINGS: BuildingDef[] = [
     hotkey: '5',
     description: 'Extracts iron ore',
     cost: 110,
+    minLevel: 2,
   },
   {
     id: 'mine-diamond',
@@ -93,6 +99,7 @@ export const BUILDINGS: BuildingDef[] = [
     hotkey: '6',
     description: 'Extracts rare diamonds',
     cost: 180,
+    minLevel: 3,
   },
   {
     id: 'warehouse',
@@ -103,6 +110,7 @@ export const BUILDINGS: BuildingDef[] = [
     hotkey: '7',
     description: 'Stores and displays your global resources',
     cost: 0,
+    minLevel: 1,
   },
 ];
 

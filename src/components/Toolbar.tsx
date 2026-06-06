@@ -5,13 +5,14 @@ import Link from 'next/link';
 import { BUILDINGS, BuildingDef, drawBuildingIcon } from '../game/buildings';
 
 interface ToolbarProps {
+  level: number;
   selectedBuildingId: string | null;
   removeMode: boolean;
   onSelectBuilding: (id: string | null) => void;
   onToggleRemove: () => void;
 }
 
-export default function Toolbar({ selectedBuildingId, removeMode, onSelectBuilding, onToggleRemove }: ToolbarProps) {
+export default function Toolbar({ level, selectedBuildingId, removeMode, onSelectBuilding, onToggleRemove }: ToolbarProps) {
   const canvasRefs = React.useRef<Map<string, HTMLCanvasElement>>(new Map());
 
   const drawIcon = React.useCallback((canvas: HTMLCanvasElement, def: BuildingDef) => {
@@ -41,16 +42,21 @@ export default function Toolbar({ selectedBuildingId, removeMode, onSelectBuildi
   return (
     <div className="toolbar-wrapper">
       <div className="toolbar">
-        {BUILDINGS.filter((def) => def.id !== 'warehouse').map((def: BuildingDef) => (
+        {BUILDINGS.filter((def) => def.id !== 'warehouse').map((def: BuildingDef) => {
+          const isLocked = def.minLevel > level;
+          return (
           <button
             key={def.id}
             id={`toolbar-${def.id}`}
-            className={`toolbar-item ${selectedBuildingId === def.id ? 'selected' : ''}`}
+            className={`toolbar-item ${selectedBuildingId === def.id ? 'selected' : ''} ${isLocked ? 'locked' : ''}`}
             onClick={() => {
+              if (isLocked) return;
               onSelectBuilding(selectedBuildingId === def.id ? null : def.id);
             }}
-            title={`${def.name} (${def.hotkey})${def.cost > 0 ? ` — $${def.cost.toLocaleString()}` : ''}`}
+            title={isLocked ? `Requires Level ${def.minLevel}` : `${def.name} (${def.hotkey})${def.cost > 0 ? ` — $${def.cost.toLocaleString()}` : ''}`}
+            disabled={isLocked}
           >
+            {isLocked && <div className="toolbar-lock-overlay">🔒 LVL {def.minLevel}</div>}
             <span className="toolbar-hotkey">{def.hotkey}</span>
             <div className="toolbar-icon">
               <canvas
@@ -65,7 +71,7 @@ export default function Toolbar({ selectedBuildingId, removeMode, onSelectBuildi
             </div>
             <span className="toolbar-item-name">{def.name}</span>
           </button>
-        ))}
+        )})}
 
         <button
           key="remove-mode"
