@@ -2,32 +2,32 @@ import { getSupabaseClient } from '../lib/supabaseClient';
 
 export type ProduceKey = 'wheat' | 'potato' | 'rice' | 'iron_ore' | 'copper_ore' | 'diamond';
 
-export type SepoliaListingStatus = 'open' | 'reserved' | 'sold' | 'cancelled';
+export type qieListingStatus = 'open' | 'reserved' | 'sold' | 'cancelled';
 
-export interface SepoliaListing {
+export interface qieListing {
   id: string;
   seller_address: string;
   item_key: ProduceKey;
   quantity: number;
   unit_price_wei: string;
   total_price_wei: string;
-  status: SepoliaListingStatus;
+  status: qieListingStatus;
   buyer_address: string | null;
-  payment_tx_hash: string | null;
+  tx_hash: string | null;
   created_at: string;
   updated_at: string;
 }
 
-type SepoliaListingRow = {
+type qieListingRow = {
   id: string;
   seller_address: string;
   item_key: ProduceKey;
   quantity: number;
   unit_price_wei: string;
   total_price_wei: string;
-  status: SepoliaListingStatus;
+  status: qieListingStatus;
   buyer_address: string | null;
-  payment_tx_hash: string | null;
+  tx_hash: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -36,7 +36,7 @@ function getClient() {
   return getSupabaseClient();
 }
 
-function mapListingRow(row: SepoliaListingRow): SepoliaListing {
+function mapListingRow(row: qieListingRow): qieListing {
   return {
     ...row,
     quantity: Number(row.quantity),
@@ -45,12 +45,12 @@ function mapListingRow(row: SepoliaListingRow): SepoliaListing {
   };
 }
 
-export function createSepoliaListingDraft(params: {
+export function createqieListingDraft(params: {
   sellerAddress: string;
   itemKey: ProduceKey;
   amount: number;
   unitPriceWei: string;
-}): Omit<SepoliaListing, 'created_at' | 'updated_at'> {
+}): Omit<qieListing, 'created_at' | 'updated_at'> {
   const totalPriceWei = (BigInt(params.unitPriceWei) * BigInt(params.amount)).toString();
 
   return {
@@ -62,48 +62,49 @@ export function createSepoliaListingDraft(params: {
     total_price_wei: totalPriceWei,
     status: 'open',
     buyer_address: null,
-    payment_tx_hash: null,
+    tx_hash: null,
   };
 }
 
-export async function loadSepoliaListings(): Promise<SepoliaListing[]> {
+export async function loadqieListings(): Promise<qieListing[]> {
   const client = getClient();
   if (!client) return [];
 
   const { data, error } = await client
     .from('market_listings')
-    .select('id, seller_address, item_key, quantity, unit_price_wei, total_price_wei, status, buyer_address, payment_tx_hash, created_at, updated_at')
+    .select('id, seller_address, item_key, quantity, unit_price_wei, total_price_wei, status, buyer_address, tx_hash, created_at, updated_at')
+    .eq('status', 'open')
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.warn('Supabase sepolia listings load failed:', error.message);
+    console.warn('Supabase qie listings load failed:', error.message);
     return [];
   }
 
-  return (data ?? []).map((row) => mapListingRow(row as SepoliaListingRow));
+  return (data ?? []).map((row) => mapListingRow(row as qieListingRow));
 }
 
-export async function createSepoliaListing(
-  listing: Omit<SepoliaListing, 'created_at' | 'updated_at'>,
-): Promise<SepoliaListing | null> {
+export async function createqieListing(
+  listing: Omit<qieListing, 'created_at' | 'updated_at'>,
+): Promise<qieListing | null> {
   const client = getClient();
   if (!client) return null;
 
   const { data, error } = await client
     .from('market_listings')
     .insert(listing)
-    .select('id, seller_address, item_key, quantity, unit_price_wei, total_price_wei, status, buyer_address, payment_tx_hash, created_at, updated_at')
+    .select('id, seller_address, item_key, quantity, unit_price_wei, total_price_wei, status, buyer_address, tx_hash, created_at, updated_at')
     .single();
 
   if (error) {
-    console.warn('Supabase sepolia listing create failed:', error.message);
+    console.warn('Supabase qie listing create failed:', error.message);
     return null;
   }
 
-  return mapListingRow(data as SepoliaListingRow);
+  return mapListingRow(data as qieListingRow);
 }
 
-export async function reserveSepoliaListing(listingId: string, buyerAddress: string): Promise<boolean> {
+export async function reserveqieListing(listingId: string, buyerAddress: string): Promise<boolean> {
   const client = getClient();
   if (!client) return false;
 
@@ -116,14 +117,14 @@ export async function reserveSepoliaListing(listingId: string, buyerAddress: str
     .maybeSingle();
 
   if (error) {
-    console.warn('Supabase sepolia listing reserve failed:', error.message);
+    console.warn('Supabase qie listing reserve failed:', error.message);
     return false;
   }
 
   return Boolean(data);
 }
 
-export async function releaseSepoliaListing(listingId: string, buyerAddress: string): Promise<void> {
+export async function releaseqieListing(listingId: string, buyerAddress: string): Promise<void> {
   const client = getClient();
   if (!client) return;
 
@@ -135,11 +136,11 @@ export async function releaseSepoliaListing(listingId: string, buyerAddress: str
     .eq('buyer_address', buyerAddress.toLowerCase());
 
   if (error) {
-    console.warn('Supabase sepolia listing release failed:', error.message);
+    console.warn('Supabase qie listing release failed:', error.message);
   }
 }
 
-export async function completeSepoliaListingSale(
+export async function completeqieListingSale(
   listingId: string,
   buyerAddress: string,
   txHash: string,
@@ -149,16 +150,16 @@ export async function completeSepoliaListingSale(
 
   const { error } = await client
     .from('market_listings')
-    .update({ status: 'sold', buyer_address: buyerAddress.toLowerCase(), payment_tx_hash: txHash })
+    .update({ status: 'sold', buyer_address: buyerAddress.toLowerCase(), tx_hash: txHash })
     .eq('id', listingId)
     .eq('status', 'reserved');
 
   if (error) {
-    console.warn('Supabase sepolia listing completion failed:', error.message);
+    console.warn('Supabase qie listing completion failed:', error.message);
   }
 }
 
-export async function cancelSepoliaListing(listingId: string, sellerAddress: string): Promise<boolean> {
+export async function cancelqieListing(listingId: string, sellerAddress: string): Promise<boolean> {
   const client = getClient();
   if (!client) return false;
 
@@ -172,7 +173,7 @@ export async function cancelSepoliaListing(listingId: string, sellerAddress: str
     .maybeSingle();
 
   if (error) {
-    console.warn('Supabase sepolia listing cancel failed:', error.message);
+    console.warn('Supabase qie listing cancel failed:', error.message);
     return false;
   }
 

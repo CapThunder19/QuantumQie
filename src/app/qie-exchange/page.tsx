@@ -2,28 +2,28 @@
 
 import React from 'react';
 import { useAccount, useBalance, useSendTransaction, useSwitchChain, useWaitForTransactionReceipt, useChainId } from 'wagmi';
-import { sepolia } from 'wagmi/chains';
+import { qie } from '../../lib/chains';
 import { formatEther, parseEther, type Hex } from 'viem';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '../../store/gameStore';
-import { EXCHANGE_ITEMS, type ExchangeItemKey } from '../../lib/sepoliaExchange';
+import { EXCHANGE_ITEMS, type ExchangeItemKey } from '../../lib/qieExchange';
 import {
-  completeSepoliaListingSale,
-  createSepoliaListing,
-  createSepoliaListingDraft,
-  loadSepoliaListings,
-  releaseSepoliaListing,
-  reserveSepoliaListing,
-  type SepoliaListing,
-} from '../../game/sepoliaMarket';
+  completeqieListingSale,
+  createqieListing,
+  createqieListingDraft,
+  loadqieListings,
+  releaseqieListing,
+  reserveqieListing,
+  type qieListing,
+} from '../../game/qieMarket';
 import HubPageShell from '../../components/HubPageShell';
-import './sepolia-exchange.css';
+import './qie-exchange.css';
 
 function shortAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-export default function SepoliaExchangePage() {
+export default function qieExchangePage() {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync, isPending: isSwitchingChain } = useSwitchChain();
@@ -34,14 +34,14 @@ export default function SepoliaExchangePage() {
 
   const [selectedItem, setSelectedItem] = React.useState<ExchangeItemKey>('wheat');
   const [quantity, setQuantity] = React.useState(1);
-  const [unitPriceEth, setUnitPriceEth] = React.useState(EXCHANGE_ITEMS[0].suggestedUnitPriceEth);
-  const [listings, setListings] = React.useState<SepoliaListing[]>([]);
+  const [unitPriceQie, setUnitPriceQie] = React.useState(EXCHANGE_ITEMS[0].suggestedUnitPriceQie);
+  const [listings, setListings] = React.useState<qieListing[]>([]);
   const [loadingListings, setLoadingListings] = React.useState(true);
   const [statusMessage, setStatusMessage] = React.useState<string | null>(null);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [activeListingId, setActiveListingId] = React.useState<string | null>(null);
   const [activeTxHash, setActiveTxHash] = React.useState<Hex | undefined>();
-  const [saleIntent, setSaleIntent] = React.useState<{ listingId: string; buyerAddress: string } | null>(null);
+  const [saleIntent, setSaleIntent] = React.useState<{ listingId: string; buyerAddress: string; itemKey: ExchangeItemKey; quantity: number } | null>(null);
 
   React.useEffect(() => {
     if (!address) {
@@ -59,14 +59,14 @@ export default function SepoliaExchangePage() {
     const item = EXCHANGE_ITEMS.find((entry) => entry.key === selectedItem);
     if (!item) return;
 
-    if (!unitPriceEth || unitPriceEth === '0') {
-      setUnitPriceEth(item.suggestedUnitPriceEth);
+    if (!unitPriceQie || unitPriceQie === '0') {
+      setUnitPriceQie(item.suggestedUnitPriceQie);
     }
-  }, [selectedItem, unitPriceEth]);
+  }, [selectedItem, unitPriceQie]);
 
   const loadListings = React.useCallback(async () => {
     setLoadingListings(true);
-    const nextListings = await loadSepoliaListings();
+    const nextListings = await loadqieListings();
     setListings(nextListings);
     setLoadingListings(false);
   }, []);
@@ -84,8 +84,9 @@ export default function SepoliaExchangePage() {
     if (!receipt.isSuccess || !saleIntent || !activeTxHash || !address) return;
 
     const finalizeSale = async () => {
-      await completeSepoliaListingSale(saleIntent.listingId, saleIntent.buyerAddress, activeTxHash);
-      setStatusMessage('Purchase confirmed on Sepolia.');
+      addResource(saleIntent.itemKey, saleIntent.quantity);
+      await completeqieListingSale(saleIntent.listingId, saleIntent.buyerAddress, activeTxHash);
+      setStatusMessage('Purchase confirmed on QIE.');
       setSaleIntent(null);
       setActiveTxHash(undefined);
       setActiveListingId(null);
@@ -93,11 +94,11 @@ export default function SepoliaExchangePage() {
     };
 
     void finalizeSale();
-  }, [address, activeTxHash, loadListings, receipt.isSuccess, saleIntent]);
+  }, [address, activeTxHash, loadListings, receipt.isSuccess, saleIntent, addResource]);
 
   React.useEffect(() => {
     if (receipt.isError && saleIntent) {
-      void releaseSepoliaListing(saleIntent.listingId, saleIntent.buyerAddress);
+      void releaseqieListing(saleIntent.listingId, saleIntent.buyerAddress);
       setErrorMessage('The payment transaction failed or was rejected.');
       setSaleIntent(null);
       setActiveTxHash(undefined);
@@ -109,15 +110,15 @@ export default function SepoliaExchangePage() {
   const activeItem = EXCHANGE_ITEMS.find((item) => item.key === selectedItem) ?? EXCHANGE_ITEMS[0];
   const availableQty = inventory[selectedItem];
   const maxQuantity = Math.max(1, availableQty);
-  const canList = Boolean(address && quantity > 0 && quantity <= availableQty && unitPriceEth.trim().length > 0);
+  const canList = Boolean(address && quantity > 0 && quantity <= availableQty && unitPriceQie.trim().length > 0);
 
-  const listingPreviewEth = React.useMemo(() => {
+  const listingPreviewQie = React.useMemo(() => {
     try {
-      return formatEther(parseEther(unitPriceEth) * BigInt(quantity));
+      return formatEther(parseEther(unitPriceQie) * BigInt(quantity));
     } catch {
       return '0';
     }
-  }, [quantity, unitPriceEth]);
+  }, [quantity, unitPriceQie]);
 
   const onCreateListing = async () => {
     if (!address) return;
@@ -130,47 +131,47 @@ export default function SepoliaExchangePage() {
     setStatusMessage(null);
 
     try {
-      const parsedPrice = unitPriceEth.trim();
-      const draft = createSepoliaListingDraft({
+      const parsedPrice = unitPriceQie.trim();
+      const draft = createqieListingDraft({
         sellerAddress: address,
         itemKey: selectedItem,
         amount: quantity,
         unitPriceWei: parseEther(parsedPrice).toString(),
       });
 
-      const created = await createSepoliaListing(draft);
+      const created = await createqieListing(draft);
 
       if (!created) {
-        setErrorMessage('Unable to publish listing to Sepolia market.');
+        setErrorMessage('Unable to publish listing to QIE market.');
         return;
       }
 
       addResource(selectedItem, -quantity);
-      setStatusMessage('Listing published. Buyers can now pay your wallet on Sepolia.');
+      setStatusMessage('Listing published. Buyers can now pay your wallet on QIE.');
       setQuantity(1);
-      setUnitPriceEth(activeItem.suggestedUnitPriceEth);
+      setUnitPriceQie(activeItem.suggestedUnitPriceQie);
       await loadListings();
     } catch {
-      setErrorMessage('Enter a valid ETH price such as 0.00001.');
+      setErrorMessage('Enter a valid QIE price such as 0.00001.');
     }
   };
 
-  const onBuyListing = async (listing: SepoliaListing) => {
+  const onBuyListing = async (listing: qieListing) => {
     if (!address) return;
     if (listing.seller_address.toLowerCase() === address.toLowerCase()) {
       setErrorMessage('You cannot buy your own listing.');
       return;
     }
 
-    if (chainId !== sepolia.id) {
-      setErrorMessage('Switch to Sepolia to buy items.');
+    if (chainId !== qie.id) {
+      setErrorMessage('Switch to QIE to buy items.');
       return;
     }
 
     setErrorMessage(null);
     setStatusMessage(null);
 
-    const reserved = await reserveSepoliaListing(listing.id, address);
+    const reserved = await reserveqieListing(listing.id, address);
     if (!reserved) {
       setErrorMessage('That listing was just bought by someone else.');
       await loadListings();
@@ -185,47 +186,47 @@ export default function SepoliaExchangePage() {
         value: BigInt(listing.total_price_wei),
       });
       setActiveTxHash(txHash);
-      setSaleIntent({ listingId: listing.id, buyerAddress: address });
-      setStatusMessage('Transaction submitted. Waiting for Sepolia confirmation...');
+      setSaleIntent({ listingId: listing.id, buyerAddress: address, itemKey: listing.item_key, quantity: listing.quantity });
+      setStatusMessage('Transaction submitted. Waiting for QIE confirmation...');
     } catch (error) {
-      await releaseSepoliaListing(listing.id, address);
+      await releaseqieListing(listing.id, address);
       setActiveListingId(null);
       setStatusMessage(null);
-      setErrorMessage(error instanceof Error ? error.message : 'Sepolia payment failed.');
+      setErrorMessage(error instanceof Error ? error.message : 'QIE payment failed.');
       await loadListings();
     }
   };
 
-  const handleSwitchToSepolia = async () => {
+  const handleSwitchToqie = async () => {
     try {
-      await switchChainAsync({ chainId: sepolia.id });
+      await switchChainAsync({ chainId: qie.id });
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unable to switch to Sepolia.');
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to switch to QIE.');
     }
   };
 
   const currentBalance = balance?.formatted ?? '0';
-  const isSepolia = chainId === sepolia.id;
+  const isqie = chainId === qie.id;
   const storageLoading = isHydrating && !isHydrated;
 
   return (
     <HubPageShell
-      kicker="Sepolia Settlement"
+      kicker="QIE Settlement"
       title="Public Exchange"
-      subtitle="List farm and mine output for direct Sepolia payment. Buyers pay your wallet on-chain and listings sync through Supabase."
+      subtitle="List farm and mine output for direct QIE payment. Buyers pay your wallet on-chain and listings sync through Supabase."
       headerAside={
         <div className="exchange-wallet-card hub-stat-chip">
           <span className="exchange-wallet-label hub-stat-label">Wallet</span>
           <span className="exchange-wallet-value hub-stat-value">
             {isConnected && address ? shortAddress(address) : 'Not connected'}
           </span>
-          <span className="exchange-wallet-meta">Sepolia {currentBalance} ETH</span>
-          {!isSepolia ? (
-            <button className="exchange-btn exchange-btn-accent" onClick={handleSwitchToSepolia} disabled={isSwitchingChain}>
-              Switch to Sepolia
+          <span className="exchange-wallet-meta">QIE & ETH</span>
+          {!isqie ? (
+            <button className="exchange-btn exchange-btn-accent" onClick={handleSwitchToqie} disabled={isSwitchingChain}>
+              Switch to QIE
             </button>
           ) : (
-            <span className="exchange-chain-pill">Sepolia active</span>
+            <span className="exchange-chain-pill">QIE active</span>
           )}
         </div>
       }
@@ -241,7 +242,7 @@ export default function SepoliaExchangePage() {
           <div className="exchange-card-head">
             <div>
               <h2>List Produce</h2>
-              <p>Pull stock from your game inventory and publish it for Sepolia buyers.</p>
+              <p>Pull stock from your game inventory and publish it for QIE buyers.</p>
             </div>
             <span className="exchange-card-badge">Seller</span>
           </div>
@@ -274,12 +275,12 @@ export default function SepoliaExchangePage() {
                 </label>
 
                 <label className="exchange-field exchange-field-wide">
-                  <span>Unit price in ETH</span>
+                  <span>Unit price in QIE</span>
                   <input
                     type="text"
-                    value={unitPriceEth}
-                    onChange={(event) => setUnitPriceEth(event.target.value)}
-                    placeholder={activeItem.suggestedUnitPriceEth}
+                    value={unitPriceQie}
+                    onChange={(event) => setUnitPriceQie(event.target.value)}
+                    placeholder={activeItem.suggestedUnitPriceQie}
                   />
                 </label>
               </div>
@@ -291,19 +292,19 @@ export default function SepoliaExchangePage() {
                 </div>
                 <div>
                   <span className="metric-label">Listing total</span>
-                  <span className="metric-value">{listingPreviewEth} ETH</span>
+                  <span className="metric-value">{listingPreviewQie} QIE</span>
                 </div>
                 <div>
                   <span className="metric-label">On-chain settlement</span>
-                  <span className="metric-value">Sepolia</span>
+                  <span className="metric-value">QIE</span>
                 </div>
               </div>
 
               <div className="exchange-actions">
-                <button className="exchange-btn exchange-btn-accent" onClick={onCreateListing} disabled={!canList || isSendingTransaction || !isSepolia}>
+                <button className="exchange-btn exchange-btn-accent" onClick={onCreateListing} disabled={!canList || isSendingTransaction}>
                   Publish Listing
                 </button>
-                {!isSepolia && <span className="exchange-help">Switch to Sepolia to publish or buy listings.</span>}
+                {!isqie && <span className="exchange-help">Switch to QIE to publish or buy listings.</span>}
               </div>
             </>
           )}
@@ -313,7 +314,7 @@ export default function SepoliaExchangePage() {
           <div className="exchange-card-head">
             <div>
               <h2>Live Listings</h2>
-              <p>Buyers can pay directly to the seller wallet on Sepolia.</p>
+              <p>Buyers can pay directly to the seller wallet on QIE.</p>
             </div>
             <button className="exchange-btn" onClick={() => void loadListings()} disabled={loadingListings}>
               Refresh
@@ -340,8 +341,8 @@ export default function SepoliaExchangePage() {
                       <p className="exchange-listing-desc">{item?.description ?? 'Public produce order'}</p>
                       <div className="exchange-listing-meta">
                         <span>Seller: {shortAddress(listing.seller_address)}</span>
-                        <span>Unit: {formatEther(BigInt(listing.unit_price_wei))} ETH</span>
-                        <span>Total: {formatEther(BigInt(listing.total_price_wei))} ETH</span>
+                        <span>Unit: {formatEther(BigInt(listing.unit_price_wei))} QIE</span>
+                        <span>Total: {formatEther(BigInt(listing.total_price_wei))} QIE</span>
                       </div>
                     </div>
 
@@ -349,9 +350,9 @@ export default function SepoliaExchangePage() {
                       <button
                         className="exchange-btn exchange-btn-buy"
                         onClick={() => void onBuyListing(listing)}
-                        disabled={isOwnListing || activeListingId === listing.id || !isConnected || !isSepolia || isSendingTransaction}
+                        disabled={isOwnListing || activeListingId === listing.id || !isConnected || !isqie || isSendingTransaction}
                       >
-                        {activeListingId === listing.id ? 'Buying...' : 'Buy on Sepolia'}
+                        {activeListingId === listing.id ? 'Buying...' : 'Buy on QIE'}
                       </button>
                       {isOwnListing && <span className="exchange-help">Your listing</span>}
                     </div>

@@ -10,7 +10,7 @@ export type ExchangeItem = {
   label: string;
   description: string;
   toneClass: string;
-  suggestedUnitPriceEth: string;
+  suggestedUnitPriceQie: string;
 };
 
 export const EXCHANGE_ITEMS: ExchangeItem[] = [
@@ -19,42 +19,42 @@ export const EXCHANGE_ITEMS: ExchangeItem[] = [
     label: 'Wheat Bundles',
     description: 'Staple grain for hungry builders.',
     toneClass: 'tone-wheat',
-    suggestedUnitPriceEth: '0.00001',
+    suggestedUnitPriceQie: '0.00001',
   },
   {
     key: 'potato',
     label: 'Potato Lots',
     description: 'Reliable food stock for long sessions.',
     toneClass: 'tone-potato',
-    suggestedUnitPriceEth: '0.000012',
+    suggestedUnitPriceQie: '0.000012',
   },
   {
     key: 'rice',
     label: 'Rice Sacks',
     description: 'Compact food bundles for transport.',
     toneClass: 'tone-rice',
-    suggestedUnitPriceEth: '0.000013',
+    suggestedUnitPriceQie: '0.000013',
   },
   {
     key: 'iron_ore',
     label: 'Iron Ore',
     description: 'Foundational material for industrial buyers.',
     toneClass: 'tone-iron',
-    suggestedUnitPriceEth: '0.00002',
+    suggestedUnitPriceQie: '0.00002',
   },
   {
     key: 'copper_ore',
     label: 'Copper Ore',
     description: 'Useful for wiring and precision parts.',
     toneClass: 'tone-copper',
-    suggestedUnitPriceEth: '0.000025',
+    suggestedUnitPriceQie: '0.000025',
   },
   {
     key: 'diamond',
     label: 'Diamond Crystals',
     description: 'Rare stock for premium orders.',
     toneClass: 'tone-diamond',
-    suggestedUnitPriceEth: '0.00005',
+    suggestedUnitPriceQie: '0.00005',
   },
 ];
 
@@ -63,8 +63,8 @@ export type ExchangeListing = {
   sellerAddress: string;
   itemKey: ExchangeItemKey;
   quantity: number;
-  unitPriceEth: string;
-  totalPriceEth: string;
+  unitPriceQie: string;
+  totalPriceQie: string;
   status: ExchangeListingStatus;
   buyerAddress: string | null;
   txHash: string | null;
@@ -92,8 +92,8 @@ function mapRow(row: ExchangeListingRow): ExchangeListing {
     sellerAddress: row.seller_address,
     itemKey: row.item_key,
     quantity: row.quantity,
-    unitPriceEth: formatEther(BigInt(row.unit_price_wei)),
-    totalPriceEth: formatEther(BigInt(row.total_price_wei)),
+    unitPriceQie: formatEther(BigInt(row.unit_price_wei)),
+    totalPriceQie: formatEther(BigInt(row.total_price_wei)),
     status: row.status,
     buyerAddress: row.buyer_address,
     txHash: row.tx_hash,
@@ -107,10 +107,10 @@ function toRow(listing: {
   sellerAddress: string;
   itemKey: ExchangeItemKey;
   quantity: number;
-  unitPriceEth: string;
+  unitPriceQie: string;
 }): ExchangeListingRow {
-  const unitPriceWei = parseEther(listing.unitPriceEth).toString();
-  const totalPriceWei = (parseEther(listing.unitPriceEth) * BigInt(listing.quantity)).toString();
+  const unitPriceWei = parseEther(listing.unitPriceQie).toString();
+  const totalPriceWei = (parseEther(listing.unitPriceQie) * BigInt(listing.quantity)).toString();
 
   return {
     id: listing.id ?? `listing-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
@@ -149,7 +149,7 @@ export async function createExchangeListing(input: {
   sellerAddress: string;
   itemKey: ExchangeItemKey;
   quantity: number;
-  unitPriceEth: string;
+  unitPriceQie: string;
 }): Promise<ExchangeListing | null> {
   const client = getSupabaseClient();
   if (!client) return null;

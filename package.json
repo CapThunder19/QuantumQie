@@ -22,11 +22,13 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^7.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "hardhat": "^3.9.0",
     "typescript": "^5"
   }
 }

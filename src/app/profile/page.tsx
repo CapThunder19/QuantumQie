@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAccount, useBalance, useChainId, useDisconnect } from 'wagmi';
-import { sepolia } from 'wagmi/chains';
+import { qie } from '../../lib/chains';
 import { useRouter } from 'next/navigation';
 import HubPageShell from '../../components/HubPageShell';
 import { useGameStore } from '../../store/gameStore';
@@ -16,7 +16,7 @@ function shortAddress(address: string): string {
 }
 
 function chainLabel(chainId: number): string {
-  if (chainId === sepolia.id) return 'Sepolia';
+  if (chainId === qie.id) return 'QIE Mainnet';
   if (chainId === 1) return 'Ethereum Mainnet';
   return `Chain ${chainId}`;
 }
@@ -52,7 +52,7 @@ export default function ProfilePage() {
     return RESOURCE_KEYS.reduce((total, key) => total + inventory[key], 0);
   }, [inventory]);
 
-  const statusLabel = chainId === sepolia.id ? 'Sepolia online' : 'Wallet connected';
+  const statusLabel = chainId === qie.id ? 'QIE online' : 'Wallet connected';
   const displayVillageName = villageName.trim().length > 0 ? villageName.trim() : 'Unnamed Village';
 
   const handleLogout = () => {
@@ -97,7 +97,7 @@ export default function ProfilePage() {
             <div className="profile-identity">
               <p className="profile-kicker">Connected wallet</p>
               <h2 className="profile-address">{address ? shortAddress(address) : 'Not connected'}</h2>
-              <p className="profile-copy">This address controls your saves, workers, marketplace stock, and Sepolia listings.</p>
+              <p className="profile-copy">This address controls your saves, workers, marketplace stock, and QIE listings.</p>
               <div className="profile-badges">
                 <span className="profile-badge">{chainLabel(chainId)}</span>
                 <span className="profile-badge profile-badge-accent">{isHydrated && !isHydrating ? 'Sync complete' : 'Syncing data'}</span>
@@ -172,8 +172,8 @@ export default function ProfilePage() {
                 <span className="profile-link-title">Marketplace</span>
                 <span className="profile-link-copy">Convert extra inventory into credits.</span>
               </Link>
-              <Link href="/sepolia-exchange" className="profile-link-card">
-                <span className="profile-link-title">Sepolia Exchange</span>
+              <Link href="/qie-exchange" className="profile-link-card">
+                <span className="profile-link-title">QIE Exchange</span>
                 <span className="profile-link-copy">Publish listings for on-chain buyers.</span>
               </Link>
             </div>

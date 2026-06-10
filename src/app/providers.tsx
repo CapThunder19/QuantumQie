@@ -3,7 +3,7 @@
 import React from 'react';
 import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { WagmiConfig, createConfig, http, injected } from 'wagmi';
-import { sepolia } from 'wagmi/chains';
+import { qie } from '../lib/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import WalletBridge from '../components/WalletBridge';
 
@@ -16,7 +16,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     const config = getDefaultConfig({
       appName: 'QuantumQie',
       projectId,
-      chains: [sepolia],
+      chains: [qie],
       ssr: true,
     });
 
@@ -34,10 +34,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   // Fallback: no WalletConnect project id — support injected wallets (MetaMask) only
   const wagmiConfig = createConfig({
-    chains: [sepolia],
+    chains: [qie],
     connectors: [injected()],
     transports: {
-      [sepolia.id]: http(),
+      [qie.id]: http(),
     },
   });
 
