@@ -184,6 +184,11 @@ export const useGameStore = create<GameState>((set, get) => {
 
     const { inventory, workers, villageName, level } = get();
     const inventoryRow: InventoryRow = { save_id: saveId, ...inventory, village_name: villageName.trim(), level };
+    const persistedInventoryRow = {
+      save_id: saveId,
+      ...inventory,
+      village_name: villageName.trim(),
+    };
     const legacyInventoryRow = toLegacyInventoryRow(saveId, inventory);
     const workerRows: WorkerRow[] = workers.map((worker) => ({
       id: worker.id,
@@ -198,7 +203,7 @@ export const useGameStore = create<GameState>((set, get) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           saveId,
-          inventory: inventoryRow,
+          inventory: persistedInventoryRow,
           workers: workerRows,
         }),
       });
@@ -221,7 +226,7 @@ export const useGameStore = create<GameState>((set, get) => {
 
     const { error: inventoryError } = await client
       .from('inventory')
-      .upsert(inventoryRow, { onConflict: 'save_id' });
+      .upsert(persistedInventoryRow, { onConflict: 'save_id' });
 
     if (inventoryError) {
       const legacyFallback = await client

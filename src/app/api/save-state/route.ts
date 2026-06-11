@@ -62,15 +62,17 @@ export async function POST(request: Request) {
     );
   }
 
+  const { level: _level, ...inventoryToSave } = body.inventory;
+
   const { error: inventoryError } = await client
     .from('inventory')
-    .upsert(body.inventory, { onConflict: 'save_id' });
+    .upsert(inventoryToSave, { onConflict: 'save_id' });
 
   if (inventoryError) {
     const legacyInventory: LegacyInventoryRow = {
-      save_id: body.inventory.save_id,
-      money: body.inventory.money,
-      food: toLegacyFood(body.inventory),
+      save_id: inventoryToSave.save_id,
+      money: inventoryToSave.money,
+      food: toLegacyFood(inventoryToSave),
     };
 
     const { error: legacyError } = await client

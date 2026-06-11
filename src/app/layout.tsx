@@ -5,6 +5,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import Providers from "./providers";
 import WalletButton from "../components/WalletButton";
 import NavLinks from "../components/NavLinks";
+import QieWalletGuard from "../components/QieWalletGuard";
 
 export const metadata: Metadata = {
   title: "QuantumQie — Factory Builder",
@@ -24,18 +25,20 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
-          <nav className="global-nav global-nav-pixel">
-            <Link href="/" className="nav-logo">
-              QuantumQie
-            </Link>
-            <div className="nav-right">
-              <div className="nav-links">
-                <NavLinks />
+          <QieWalletGuard>
+            <nav className="global-nav global-nav-pixel">
+              <Link href="/" className="nav-logo">
+                QuantumQie
+              </Link>
+              <div className="nav-right">
+                <div className="nav-links">
+                  <NavLinks />
+                </div>
+                <WalletButton />
               </div>
-              <WalletButton />
-            </div>
-          </nav>
-          {children}
+            </nav>
+            {children}
+          </QieWalletGuard>
         </Providers>
       </body>
     </html>

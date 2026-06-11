@@ -42,7 +42,7 @@ export default function WalletButton() {
     );
   }
 
-  const injected = connectors.find((c) => c.id === 'injected');
+  const injected = connectors.find((c) => c.id === 'injected' || c.id === 'qieWallet');
   const pendingConnector = variables?.connector;
 
   return (
