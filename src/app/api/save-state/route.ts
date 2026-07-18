@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { level: _level, ...inventoryToSave } = body.inventory;
+  const inventoryToSave = body.inventory;
 
   const { error: inventoryError } = await client
     .from('inventory')
