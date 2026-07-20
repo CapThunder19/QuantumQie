@@ -1,6 +1,7 @@
 // ── Placement Logic & Collision Detection ────────────────────────────────────
 
 import { PlacedBuilding, BuildingDef, getBuildingDef, Direction } from './buildings';
+import type { RecipeKey } from './economyConstants';
 
 // ── Game World State ─────────────────────────────────────────────────────────
 
@@ -108,6 +109,7 @@ export function placeBuilding(
   col: number,
   row: number,
   direction: Direction,
+  recipeKey: RecipeKey | null = null,
 ): PlacedBuilding | null {
   if (!canPlace(world, defId, col, row)) return null;
 
@@ -120,6 +122,7 @@ export function placeBuilding(
     assignedWorkerId: null,
     productionProgress: 0,
     readyToHarvest: false,
+    recipeKey,
   };
 
   world.nextBuildingId++;

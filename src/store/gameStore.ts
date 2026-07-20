@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { getSupabaseClient } from '../lib/supabaseClient';
+import { BASE_WORKER_COSTS, LEVEL_UPGRADE_COST } from '../game/economyConstants';
 
-export type WorkerType = 'farmer' | 'miner';
+export type WorkerType = 'farmer' | 'miner' | 'engineer';
 
 export interface Worker {
   id: string;
@@ -17,6 +18,8 @@ export interface Inventory {
   iron_ore: number;
   copper_ore: number;
   diamond: number;
+  iron_bar: number;
+  copper_bar: number;
 }
 
 interface GameState {
@@ -43,11 +46,6 @@ interface GameState {
   getAvailableWorker: (type: WorkerType) => Worker | undefined;
 }
 
-const BASE_WORKER_COSTS: Record<WorkerType, number> = {
-  farmer: 50,
-  miner: 100,
-};
-
 const WORKER_PRICE_CONFIG = {
   sameTypeScale: 0.18,
   totalScale: 0.06,
@@ -64,6 +62,8 @@ const DEFAULT_INVENTORY: Inventory = {
   iron_ore: 0,
   copper_ore: 0,
   diamond: 0,
+  iron_bar: 0,
+  copper_bar: 0,
 };
 
 type InventoryRow = {
@@ -75,6 +75,8 @@ type InventoryRow = {
   iron_ore: number;
   copper_ore: number;
   diamond: number;
+  iron_bar?: number;
+  copper_bar?: number;
   village_name?: string;
   food?: number;
   level?: number;
@@ -102,6 +104,8 @@ function normalizeInventory(row?: Partial<InventoryRow> | null): Inventory {
     iron_ore: typeof row?.iron_ore === 'number' ? row.iron_ore : DEFAULT_INVENTORY.iron_ore,
     copper_ore: typeof row?.copper_ore === 'number' ? row.copper_ore : DEFAULT_INVENTORY.copper_ore,
     diamond: typeof row?.diamond === 'number' ? row.diamond : DEFAULT_INVENTORY.diamond,
+    iron_bar: typeof row?.iron_bar === 'number' ? row.iron_bar : DEFAULT_INVENTORY.iron_bar,
+    copper_bar: typeof row?.copper_bar === 'number' ? row.copper_bar : DEFAULT_INVENTORY.copper_bar,
   };
 
   const hasNewCrops =
@@ -276,7 +280,7 @@ export const useGameStore = create<GameState>((set, get) => {
 
     const inventoryResponse = await client
       .from('inventory')
-      .select('save_id, money, wheat, potato, rice, iron_ore, copper_ore, diamond, village_name, food, level')
+      .select('save_id, money, wheat, potato, rice, iron_ore, copper_ore, diamond, iron_bar, copper_bar, village_name, food, level')
       .eq('save_id', saveId)
       .maybeSingle();
 
@@ -380,18 +384,18 @@ export const useGameStore = create<GameState>((set, get) => {
 
     upgradeLevel: () => {
       const { inventory, level } = get();
-      if (level === 1 && inventory.money >= 5000) {
+      if (level === 1 && inventory.money >= LEVEL_UPGRADE_COST[2]) {
         set({
           level: 2,
-          inventory: { ...inventory, money: inventory.money - 5000 },
+          inventory: { ...inventory, money: inventory.money - LEVEL_UPGRADE_COST[2] },
         });
         void saveState();
         return true;
       }
-      if (level === 2 && inventory.money >= 10000) {
+      if (level === 2 && inventory.money >= LEVEL_UPGRADE_COST[3]) {
         set({
           level: 3,
-          inventory: { ...inventory, money: inventory.money - 10000 },
+          inventory: { ...inventory, money: inventory.money - LEVEL_UPGRADE_COST[3] },
         });
         void saveState();
         return true;

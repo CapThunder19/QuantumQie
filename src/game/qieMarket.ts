@@ -1,6 +1,7 @@
 import { getSupabaseClient } from '../lib/supabaseClient';
+import type { ProduceKey } from './economyConstants';
 
-export type ProduceKey = 'wheat' | 'potato' | 'rice' | 'iron_ore' | 'copper_ore' | 'diamond';
+export type { ProduceKey };
 
 export type qieListingStatus = 'open' | 'reserved' | 'sold' | 'cancelled';
 

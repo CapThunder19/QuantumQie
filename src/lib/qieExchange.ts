@@ -1,4 +1,12 @@
-export type ExchangeItemKey = 'wheat' | 'potato' | 'rice' | 'iron_ore' | 'copper_ore' | 'diamond';
+export type ExchangeItemKey =
+  | 'wheat'
+  | 'potato'
+  | 'rice'
+  | 'iron_ore'
+  | 'copper_ore'
+  | 'diamond'
+  | 'iron_bar'
+  | 'copper_bar';
 
 export type ExchangeItem = {
   key: ExchangeItemKey;
@@ -50,5 +58,19 @@ export const EXCHANGE_ITEMS: ExchangeItem[] = [
     description: 'Rare stock for premium orders.',
     toneClass: 'tone-diamond',
     suggestedUnitPriceQie: '0.00005',
+  },
+  {
+    key: 'iron_bar',
+    label: 'Iron Bars',
+    description: 'Refined ingots, smelted from raw iron ore.',
+    toneClass: 'tone-iron',
+    suggestedUnitPriceQie: '0.0001',
+  },
+  {
+    key: 'copper_bar',
+    label: 'Copper Bars',
+    description: 'Refined ingots, smelted from raw copper ore.',
+    toneClass: 'tone-copper',
+    suggestedUnitPriceQie: '0.00012',
   },
 ];

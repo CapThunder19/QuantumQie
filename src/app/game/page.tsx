@@ -14,6 +14,7 @@ import { getBuildingAt } from '../../game/placement';
 import { Direction } from '../../game/buildings';
 import { useGameStore } from '../../store/gameStore';
 import { computeNextBuildingId, loadBuildings, upsertBuildings } from '../../game/persistence';
+import type { RecipeKey } from '../../game/economyConstants';
 
 export default function GamePage() {
   const { address } = useAccount();
@@ -44,6 +45,7 @@ export default function GamePage() {
   
   // UI State extracted from engine each frame
   const [selectedBuildingId, setSelectedBuildingId] = useState<string | null>(null);
+  const [recipeKey, setRecipeKey] = useState<RecipeKey>('iron');
   const [removeMode, setRemoveMode] = useState(false);
   const [gridPos, setGridPos] = useState({ col: 0, row: 0 });
   const [zoom, setZoom] = useState(1);
@@ -108,6 +110,13 @@ export default function GamePage() {
       setSelectedBuildingId(prev => {
         if (prev !== engine.input.selectedBuildingId) {
           return engine.input.selectedBuildingId;
+        }
+        return prev;
+      });
+
+      setRecipeKey(prev => {
+        if (prev !== engine.input.currentRecipeKey) {
+          return engine.input.currentRecipeKey;
         }
         return prev;
       });
@@ -247,11 +256,12 @@ export default function GamePage() {
       />
 
       {/* UI Overlays */}
-      <HUD 
-        gridCol={gridPos.col} 
-        gridRow={gridPos.row} 
-        zoom={zoom} 
-        fps={fps} 
+      <HUD
+        gridCol={gridPos.col}
+        gridRow={gridPos.row}
+        zoom={zoom}
+        fps={fps}
+        smelterRecipeKey={selectedBuildingId === 'smelter' ? recipeKey : null}
       />
 
       <aside className="hub-side-panel">
@@ -293,6 +303,14 @@ export default function GamePage() {
                 <span className="hub-storage-label">Diamond</span>
                 <span className="hub-storage-value diamond">{inventory.diamond.toLocaleString()}</span>
               </li>
+              <li className="hub-storage-item">
+                <span className="hub-storage-label">Iron Bar</span>
+                <span className="hub-storage-value iron">{inventory.iron_bar.toLocaleString()}</span>
+              </li>
+              <li className="hub-storage-item">
+                <span className="hub-storage-label">Copper Bar</span>
+                <span className="hub-storage-value copper">{inventory.copper_bar.toLocaleString()}</span>
+              </li>
             </ul>
           )}
         </section>
@@ -327,7 +345,7 @@ export default function GamePage() {
                   {workers.map((worker) => (
                     <li key={worker.id} className="hub-worker-item">
                       <span className="hub-worker-type">
-                        {worker.type === 'farmer' ? '👨‍🌾 Farmer' : '⛏️ Miner'}
+                        {worker.type === 'farmer' ? '👨‍🌾 Farmer' : worker.type === 'miner' ? '⛏️ Miner' : '🔧 Engineer'}
                       </span>
                       <span
                         className={`hub-worker-status ${worker.assignedBuildingId ? 'assigned' : 'idle'}`}

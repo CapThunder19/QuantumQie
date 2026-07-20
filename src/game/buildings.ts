@@ -1,5 +1,7 @@
 // ── Building Definitions & Procedural Rendering ──────────────────────────────
 
+import type { RecipeKey } from './economyConstants';
+
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
 export interface BuildingDef {
@@ -23,6 +25,7 @@ export interface PlacedBuilding {
   assignedWorkerId: string | null;
   productionProgress: number; // 0 to 100
   readyToHarvest: boolean;
+  recipeKey: RecipeKey | null; // smelter only — which ore recipe this instance refines
 }
 
 type SpriteCrop = {
@@ -111,6 +114,17 @@ export const BUILDINGS: BuildingDef[] = [
     description: 'Stores and displays your global resources',
     cost: 0,
     minLevel: 1,
+  },
+  {
+    id: 'smelter',
+    name: 'Smelter',
+    size: 5,
+    color: '#5c3a2e',
+    accentColor: '#ff7b3d',
+    hotkey: '8',
+    description: 'Refines raw ore into valuable bars. Choose a recipe with C before placing.',
+    cost: 250,
+    minLevel: 2,
   },
 ];
 
@@ -776,6 +790,45 @@ function drawWarehouse(
   ctx.stroke();
 }
 
+function drawSmelter(
+  ctx: CanvasRenderingContext2D,
+  def: BuildingDef,
+  sx: number,
+  sy: number,
+  s: number,
+): void {
+  const cx = sx + s / 2;
+  const cy = sy + s / 2;
+
+  // Brick-like horizontal lines
+  ctx.strokeStyle = def.accentColor;
+  ctx.lineWidth = Math.max(1, s * 0.015);
+  const pad = s * 0.1;
+  const lineCount = 5;
+  for (let i = 1; i <= lineCount; i++) {
+    const ly = sy + pad + ((s - pad * 2) / (lineCount + 1)) * i;
+    ctx.beginPath();
+    ctx.moveTo(sx + pad, ly);
+    ctx.lineTo(sx + s - pad, ly);
+    ctx.stroke();
+  }
+
+  // Flame icon — 3 teardrop shapes
+  ctx.fillStyle = def.accentColor;
+  const flameH = s * 0.18;
+  const flameW = s * 0.07;
+  for (const offsetX of [-s * 0.1, 0, s * 0.1]) {
+    const fx = cx + offsetX;
+    const fy = cy - s * 0.05;
+    ctx.beginPath();
+    ctx.moveTo(fx, fy - flameH);
+    ctx.quadraticCurveTo(fx + flameW * 1.5, fy - flameH * 0.3, fx, fy + flameH * 0.5);
+    ctx.quadraticCurveTo(fx - flameW * 1.5, fy - flameH * 0.3, fx, fy - flameH);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
 // ── Public Drawing API ───────────────────────────────────────────────────────
 
 /**
@@ -837,6 +890,9 @@ export function drawBuilding(
     case 'warehouse':
       drawWarehouse(ctx, def, screenX, screenY, totalSize);
       break;
+    case 'smelter':
+      drawSmelter(ctx, def, screenX, screenY, totalSize);
+      break;
   }
 
   ctx.restore();
@@ -896,6 +952,10 @@ export function drawBuildingIcon(
     }
     case 'warehouse': {
       drawWarehouse(ctx, def, x, y, size);
+      break;
+    }
+    case 'smelter': {
+      drawSmelter(ctx, def, x, y, size);
       break;
     }
   }

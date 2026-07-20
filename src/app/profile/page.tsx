@@ -9,7 +9,7 @@ import HubPageShell from '../../components/HubPageShell';
 import { useGameStore } from '../../store/gameStore';
 import './profile.css';
 
-const RESOURCE_KEYS = ['wheat', 'potato', 'rice', 'iron_ore', 'copper_ore', 'diamond'] as const;
+const RESOURCE_KEYS = ['wheat', 'potato', 'rice', 'iron_ore', 'copper_ore', 'diamond', 'iron_bar', 'copper_bar'] as const;
 
 function shortAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;

@@ -6,6 +6,7 @@ import { getBuildingDef, Direction } from './buildings';
 import { placeBuilding, removeBuilding, getBuildingAt } from './placement';
 import { useGameStore } from '../store/gameStore';
 import { deleteBuilding, upsertBuilding } from './persistence';
+import { RECIPES } from './economyConstants';
 
 export interface GameEngine {
   camera: Camera;
@@ -138,7 +139,8 @@ export function tick(engine: GameEngine, timestamp: number): void {
             def.id,
             engine.input.mouseGridCol,
             engine.input.mouseGridRow,
-            engine.input.currentDirection
+            engine.input.currentDirection,
+            def.id === 'smelter' ? engine.input.currentRecipeKey : null
           );
           if (placed) {
             if (cost > 0) {
@@ -153,29 +155,43 @@ export function tick(engine: GameEngine, timestamp: number): void {
       const b = getBuildingAt(engine.world, engine.input.mouseGridCol, engine.input.mouseGridRow);
       if (b) {
         if (b.readyToHarvest) {
-          // Harvest!
-          b.readyToHarvest = false;
-          b.productionProgress = 0;
-          
-          if (b.defId === 'farm-wheat') {
-            store.addResource('wheat', 10);
-          } else if (b.defId === 'farm-potato') {
-            store.addResource('potato', 10);
-          } else if (b.defId === 'farm-rice') {
-            store.addResource('rice', 10);
-          } else if (b.defId === 'mine-iron') {
-            store.addResource('iron_ore', 10);
-          } else if (b.defId === 'mine-copper') {
-            store.addResource('copper_ore', 10);
-          } else if (b.defId === 'mine-diamond') {
-            store.addResource('diamond', 5);
+          if (b.defId === 'smelter') {
+            // Smelter harvest is gated on having enough input ore — if the
+            // player hasn't stockpiled enough yet, leave it "ready" and try
+            // again on a later click instead of harvesting nothing.
+            const recipe = b.recipeKey ? RECIPES[b.recipeKey] : null;
+            if (recipe && store.inventory[recipe.input] >= recipe.inputAmount) {
+              store.addResource(recipe.input, -recipe.inputAmount);
+              store.addResource(recipe.output, recipe.outputAmount);
+              b.readyToHarvest = false;
+              b.productionProgress = 0;
+              void upsertBuilding(b);
+            }
           } else {
-            store.addResource('money', 5);
+            // Harvest!
+            b.readyToHarvest = false;
+            b.productionProgress = 0;
+
+            if (b.defId === 'farm-wheat') {
+              store.addResource('wheat', 10);
+            } else if (b.defId === 'farm-potato') {
+              store.addResource('potato', 10);
+            } else if (b.defId === 'farm-rice') {
+              store.addResource('rice', 10);
+            } else if (b.defId === 'mine-iron') {
+              store.addResource('iron_ore', 10);
+            } else if (b.defId === 'mine-copper') {
+              store.addResource('copper_ore', 10);
+            } else if (b.defId === 'mine-diamond') {
+              store.addResource('diamond', 5);
+            } else {
+              store.addResource('money', 5);
+            }
+            void upsertBuilding(b);
           }
-          void upsertBuilding(b);
         } else if (!b.assignedWorkerId) {
           // Try to assign a worker
-          const requiredType = b.defId.startsWith('farm') ? 'farmer' : 'miner';
+          const requiredType = b.defId === 'smelter' ? 'engineer' : b.defId.startsWith('farm') ? 'farmer' : 'miner';
           const availableWorker = store.getAvailableWorker(requiredType);
           if (availableWorker) {
             store.assignWorker(availableWorker.id, b.id);

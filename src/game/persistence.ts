@@ -1,6 +1,7 @@
 import { PlacedBuilding, Direction } from './buildings';
 import { getSupabaseClient } from '../lib/supabaseClient';
 import { getActiveSaveId } from '../store/gameStore';
+import type { RecipeKey } from './economyConstants';
 
 type BuildingRow = {
   id: string;
@@ -12,6 +13,7 @@ type BuildingRow = {
   assigned_worker_id: string | null;
   production_progress: number;
   ready_to_harvest: boolean;
+  recipe_key: RecipeKey | null;
 };
 
 function mapBuildingRow(row: BuildingRow): PlacedBuilding {
@@ -24,6 +26,7 @@ function mapBuildingRow(row: BuildingRow): PlacedBuilding {
     assignedWorkerId: row.assigned_worker_id ?? null,
     productionProgress: typeof row.production_progress === 'number' ? row.production_progress : 0,
     readyToHarvest: Boolean(row.ready_to_harvest),
+    recipeKey: row.recipe_key ?? null,
   };
 }
 
@@ -38,6 +41,7 @@ function toBuildingRow(building: PlacedBuilding, saveId: string): BuildingRow {
     assigned_worker_id: building.assignedWorkerId,
     production_progress: building.productionProgress,
     ready_to_harvest: building.readyToHarvest,
+    recipe_key: building.recipeKey,
   };
 }
 
@@ -65,7 +69,7 @@ export async function loadBuildings(saveId?: string): Promise<PlacedBuilding[]> 
 
   const { data, error } = await client
     .from('buildings')
-    .select('id, def_id, col, row, direction, assigned_worker_id, production_progress, ready_to_harvest, save_id')
+    .select('id, def_id, col, row, direction, assigned_worker_id, production_progress, ready_to_harvest, recipe_key, save_id')
     .eq('save_id', activeSaveId);
 
   if (error) {

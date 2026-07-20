@@ -1,5 +1,6 @@
 import { Camera, screenToGrid, zoomAt } from './camera';
 import { Direction } from './buildings';
+import type { RecipeKey } from './economyConstants';
 
 // ---------------------------------------------------------------------------
 // Input state
@@ -17,6 +18,7 @@ export interface InputState {
   selectedBuildingId: string | null;
   removeMode: boolean;
   currentDirection: Direction;
+  currentRecipeKey: RecipeKey;
   canAffordPlacement: boolean;
   // Actions (consumed each frame)
   placeRequested: boolean;
@@ -35,6 +37,7 @@ export function createInputState(): InputState {
     selectedBuildingId: null,
     removeMode: false,
     currentDirection: 'up' as Direction,
+    currentRecipeKey: 'iron' as RecipeKey,
     canAffordPlacement: true,
     placeRequested: false,
     removeRequested: false,
@@ -54,7 +57,15 @@ const BUILDING_HOTKEYS: Record<string, string> = {
   '4': 'mine-copper',
   '5': 'mine-iron',
   '6': 'mine-diamond',
+  '8': 'smelter',
 };
+
+const RECIPE_CYCLE: RecipeKey[] = ['iron', 'copper'];
+
+function nextRecipe(current: RecipeKey): RecipeKey {
+  const idx = RECIPE_CYCLE.indexOf(current);
+  return RECIPE_CYCLE[(idx + 1) % RECIPE_CYCLE.length];
+}
 
 // ---------------------------------------------------------------------------
 // Direction rotation cycle
@@ -135,11 +146,17 @@ export function setupInputHandlers(
       }
     }
 
+    // Cycle smelter recipe (only meaningful while placing a smelter)
+    if ((key === 'c' || key === 'C') && inputState.selectedBuildingId === 'smelter') {
+      inputState.currentRecipeKey = nextRecipe(inputState.currentRecipeKey);
+    }
+
     // Building hotkeys 1‑8
     const buildingId = BUILDING_HOTKEYS[key];
     if (buildingId) {
       inputState.selectedBuildingId = buildingId;
       inputState.currentDirection = 'up' as Direction;
+      inputState.currentRecipeKey = 'iron';
       inputState.removeMode = false;
     }
   };

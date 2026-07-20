@@ -10,6 +10,12 @@ import HubPageShell from '../../components/HubPageShell';
 import PixelArt from '../../components/PixelArt';
 import './workers.css';
 
+function workerLabel(type: 'farmer' | 'miner' | 'engineer'): string {
+  if (type === 'farmer') return '👨‍🌾 Farmer';
+  if (type === 'miner') return '⛏️ Miner';
+  return '🔧 Engineer';
+}
+
 export default function WorkersPage() {
   const { address } = useAccount();
   const router = useRouter();
@@ -65,9 +71,11 @@ export default function WorkersPage() {
 
   const handleBuyFarmer = () => buyWorker('farmer');
   const handleBuyMiner = () => buyWorker('miner');
+  const handleBuyEngineer = () => buyWorker('engineer');
   const availableWorkers = workers.filter((worker) => !worker.assignedBuildingId);
   const farmerCost = getWorkerCost('farmer', workers);
   const minerCost = getWorkerCost('miner', workers);
+  const engineerCost = getWorkerCost('engineer', workers);
 
   return (
     <HubPageShell
@@ -111,6 +119,17 @@ export default function WorkersPage() {
                 </button>
               </div>
             </div>
+
+            <div className="shop-item">
+              <div className="shop-icon engineer-icon">🔧</div>
+              <div className="shop-info">
+                <h3>Engineer</h3>
+                <p>Operates the Smelter, refining ore into valuable bars.</p>
+                <button className="buy-btn" onClick={handleBuyEngineer} disabled={inventory.money < engineerCost}>
+                  Hire ${engineerCost.toLocaleString()}
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -122,7 +141,7 @@ export default function WorkersPage() {
             <ul className="worker-list">
               {availableWorkers.map((w) => (
                 <li key={w.id} className="worker-list-item">
-                  <div className="worker-type">{w.type === 'farmer' ? '👨‍🌾 Farmer' : '⛏️ Miner'}</div>
+                  <div className="worker-type">{workerLabel(w.type)}</div>
                   <div className="worker-status idle">Available</div>
                 </li>
               ))}
@@ -156,7 +175,7 @@ export default function WorkersPage() {
             <ul className="worker-list worker-list-scroll">
               {workers.map((w) => (
                 <li key={w.id} className="worker-list-item">
-                  <div className="worker-type">{w.type === 'farmer' ? '👨‍🌾 Farmer' : '⛏️ Miner'}</div>
+                  <div className="worker-type">{workerLabel(w.type)}</div>
                   <div className={`worker-status ${w.assignedBuildingId ? 'assigned' : 'idle'}`}>
                     {w.assignedBuildingId ? 'On assignment' : 'Idle'}
                   </div>

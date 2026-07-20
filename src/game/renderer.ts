@@ -8,6 +8,7 @@ import {
 } from './buildings';
 import { GameWorld, canPlace } from './placement';
 import { InputState } from './input';
+import type { RecipeKey } from './economyConstants';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -21,6 +22,31 @@ const GHOST_ALPHA = 0.5;
 const INVALID_OVERLAY = 'rgba(255, 40, 40, 0.35)';
 const VALID_GLOW = 'rgba(40, 255, 80, 0.45)';
 const VALID_GLOW_LINE = 2;
+
+const RECIPE_DOT_COLOR: Record<RecipeKey, string> = {
+  iron: '#c2c7d2',
+  copper: '#f0a24a',
+};
+
+/** Small colored dot on a smelter indicating which recipe it's set to refine. */
+function drawRecipeIndicator(
+  ctx: CanvasRenderingContext2D,
+  recipeKey: RecipeKey,
+  screenX: number,
+  screenY: number,
+  totalSize: number,
+): void {
+  const r = totalSize * 0.06;
+  ctx.save();
+  ctx.fillStyle = RECIPE_DOT_COLOR[recipeKey];
+  ctx.beginPath();
+  ctx.arc(screenX + totalSize * 0.15, screenY + totalSize * 0.15, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
+}
 
 // ---------------------------------------------------------------------------
 // Main render
@@ -85,6 +111,10 @@ export function render(
       1.0
     );
 
+    if (def.id === 'smelter' && b.recipeKey) {
+      drawRecipeIndicator(ctx, b.recipeKey, screen.x, screen.y, size * tileScreenSize);
+    }
+
     // Draw Worker Status & Sprite
     if (b.assignedWorkerId) {
       const totalSize = size * tileScreenSize;
@@ -97,7 +127,7 @@ export function render(
       const ws = Math.max(6, tileScreenSize * 0.25); // worker size
       
       const isFarmer = def.id.startsWith('farm');
-      ctx.fillStyle = isFarmer ? '#f5d06a' : '#c2c7d2'; 
+      ctx.fillStyle = isFarmer ? '#f5d06a' : def.id === 'smelter' ? '#ff9d5c' : '#c2c7d2';
       
       // head
       ctx.beginPath();
@@ -181,6 +211,10 @@ export function render(
       ctx.globalAlpha = 1.0;
 
       const totalSize = ghostSize * tileScreenSize;
+
+      if (ghostDef.id === 'smelter') {
+        drawRecipeIndicator(ctx, input.currentRecipeKey, ghostScreen.x, ghostScreen.y, totalSize);
+      }
 
       if (!valid) {
         // Invalid: red overlay

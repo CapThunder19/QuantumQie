@@ -4,69 +4,17 @@ import React from 'react';
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { useGameStore, type Inventory } from '../../store/gameStore';
+import { MARKET_PRICE_CONFIG, type ProduceKey } from '../../game/economyConstants';
 import HubPageShell from '../../components/HubPageShell';
 import './marketplace.css';
 
-type MarketKey = 'wheat' | 'potato' | 'rice' | 'iron_ore' | 'copper_ore' | 'diamond';
+type MarketKey = ProduceKey;
 
 type MarketItem = {
   key: MarketKey;
   label: string;
   description: string;
   toneClass: string;
-};
-
-type MarketPriceConfig = {
-  basePrice: number;
-  targetStock: number;
-  minMultiplier: number;
-  maxMultiplier: number;
-  step: number;
-};
-
-const MARKET_PRICE_CONFIG: Record<MarketKey, MarketPriceConfig> = {
-  wheat: {
-    basePrice: 6,
-    targetStock: 140,
-    minMultiplier: 0.6,
-    maxMultiplier: 1.6,
-    step: 1,
-  },
-  potato: {
-    basePrice: 7,
-    targetStock: 120,
-    minMultiplier: 0.6,
-    maxMultiplier: 1.7,
-    step: 1,
-  },
-  rice: {
-    basePrice: 8,
-    targetStock: 110,
-    minMultiplier: 0.6,
-    maxMultiplier: 1.7,
-    step: 1,
-  },
-  iron_ore: {
-    basePrice: 12,
-    targetStock: 80,
-    minMultiplier: 0.6,
-    maxMultiplier: 1.7,
-    step: 1,
-  },
-  copper_ore: {
-    basePrice: 14,
-    targetStock: 60,
-    minMultiplier: 0.6,
-    maxMultiplier: 1.8,
-    step: 1,
-  },
-  diamond: {
-    basePrice: 30,
-    targetStock: 40,
-    minMultiplier: 0.7,
-    maxMultiplier: 2.2,
-    step: 1,
-  },
 };
 
 const MARKET_ITEMS: MarketItem[] = [
@@ -105,6 +53,18 @@ const MARKET_ITEMS: MarketItem[] = [
     label: 'Diamond Crystals',
     description: 'Ultra-rare stock for precision tooling.',
     toneClass: 'tone-diamond',
+  },
+  {
+    key: 'iron_bar',
+    label: 'Iron Bars',
+    description: 'Refined ingots, smelted from raw iron ore.',
+    toneClass: 'tone-iron',
+  },
+  {
+    key: 'copper_bar',
+    label: 'Copper Bars',
+    description: 'Refined ingots, smelted from raw copper ore.',
+    toneClass: 'tone-copper',
   },
 ];
 
@@ -145,14 +105,13 @@ export default function MarketplacePage() {
 
   const storageLoading = isHydrating && !isHydrated;
   const priceByKey = React.useMemo(() => {
-    return {
-      wheat: computeMarketPrice('wheat', inventory),
-      potato: computeMarketPrice('potato', inventory),
-      rice: computeMarketPrice('rice', inventory),
-      iron_ore: computeMarketPrice('iron_ore', inventory),
-      copper_ore: computeMarketPrice('copper_ore', inventory),
-      diamond: computeMarketPrice('diamond', inventory),
-    };
+    return MARKET_ITEMS.reduce(
+      (acc, item) => {
+        acc[item.key] = computeMarketPrice(item.key, inventory);
+        return acc;
+      },
+      {} as Record<MarketKey, number>,
+    );
   }, [inventory]);
 
   const totalInventoryValue = React.useMemo(() => {
